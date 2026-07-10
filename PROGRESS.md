@@ -1,8 +1,9 @@
 # PROGRESS — read this first when resuming
 
-**Last updated:** 2026-07-10 — **M0–M4 complete and gated. M5 ≈95% done.** Lighthouse + exhaustive visual
-diff both complete (see below). Remaining: git push to GitHub (local commit `23ab853` done; push pending a
-PAT), and the Neon `DATABASE_URL` cutover (deferred by decision — staying on PGlite until the finish line).
+**Last updated:** 2026-07-11 — **M0–M5 complete and gated.** Lighthouse + exhaustive visual diff done; first
+commit **pushed to GitHub** (`admindtale2026/Ecom-Analytics-Pro`, `main` @ `ec07a83`). Only two items remain,
+both **intentionally deferred** (external dependencies, not blockers): the Neon `DATABASE_URL` cutover, and the
+delta-sync-twice test against a real Google sheet.
 
 > Dev server runs on **port 3100** in this project (`npm run dev -- --port 3100`), not 3000.
 > Check `lsof -nP -iTCP:3100 -sTCP:LISTEN` before starting another.
@@ -10,33 +11,27 @@ PAT), and the Neon `DATABASE_URL` cutover (deferred by decision — staying on P
 
 ## Resume here
 
-Everything builds, lints, typechecks, and every route was driven in a real browser. What's left:
+Everything builds, lints, typechecks, is committed **and pushed to GitHub**, and every route was driven in a
+real browser. M0–M5 are done. Both remaining items are **deferred by choice**, not blockers:
 
-1. ~~**Lighthouse run** on `/dashboard` and `/opportunity`.~~ **DONE** — prod build + authed admin:
-   dashboard 83/100/100/100, opportunity 90/100/100/100 (perf/a11y/bp/seo). LCP is the only <90; CLS 0.
-2. ~~**Exhaustive visual diff** against all 41 images in `screenshots/`.~~ **DONE** — captured all 18 routes
-   in headless Chrome (authenticated, 1440px full-page), mapped every reference to a route, confirmed layout
-   parity and **all 6 reference bugs fixed on the rendered pages**. No app defects. (Caveat: automated
+1. ~~**Lighthouse run.**~~ **DONE** — prod build + authed admin: dashboard 83/100/100/100,
+   opportunity 90/100/100/100 (perf/a11y/bp/seo). LCP is the only <90; CLS 0.
+2. ~~**Exhaustive visual diff** against all 41 `screenshots/`.~~ **DONE** — all 18 routes captured, every
+   reference mapped, all 6 reference bugs fixed on the rendered pages, no app defects. (Caveat: automated
    screenshots must capture *in-viewport*, not `captureBeyondViewport`, or Recharts cartesian charts appear
    blank in the image only — the app renders them fine.)
-3. **`DATABASE_URL`** — still on local PGlite. Drop a Supabase/Neon string into `.env.local`, then
-   `npm run db:generate && npm run db:migrate && npm run db:seed-geo`, **then restart `next dev`**
-   (see the PGlite gotcha below). No code changes needed.
-4. **Nothing has been committed yet.** `git status` is dirty with the whole build. Remember to add
-   the vendored `public/geo/india-states.topo.json` (232 KB) — it is intentionally checked in.
+3. ~~**First commit + push.**~~ **DONE** — own repo, `main` @ `ec07a83` on GitHub; vendored
+   `public/geo/india-states.topo.json` included.
+4. **Neon `DATABASE_URL` cutover** — *deferred to the finish line.* Still on local PGlite. Set `DATABASE_URL`
+   in `.env.local` (pooled string for the app; **direct** string for migrations), run
+   `npm run db:generate && npm run db:migrate && npm run db:seed && npm run db:seed-geo`, **then restart
+   `next dev`** (see the PGlite gotcha below). No code changes needed. Runbook:
+   `~/.claude/plans/magical-hopping-wall.md`.
+5. **Delta-sync-twice against a real Google sheet** — *deferred:* needs `GOOGLE_SERVICE_ACCOUNT_JSON`. Upsert
+   idempotency is already proven by the M1 synthetic-sheet test.
 
 This file is the single source of truth for "where did we stop and what's next".
 `plan.md` = the approved architecture. `CHECKLIST.md` = the tick-boxes per module.
-
----
-
-## How to resume in one paragraph
-
-The Next.js app is scaffolded and the **entire server query layer already exists and compiles**
-(`npx tsc --noEmit` passes). Seven of twelve pages are still `<Stub/>` placeholders, and the
-Excel ingest, Google Sheets sync, and India heatmap don't exist yet. Work through the modules
-**M0 → M5 in order** as defined in `plan.md`, ticking `CHECKLIST.md` only after each module's
-verification gate passes. Start by reading `plan.md`, then this file, then `CHECKLIST.md`.
 
 ---
 
@@ -73,7 +68,8 @@ restart `next dev`. Full step-by-step in `~/.claude/plans/magical-hopping-wall.m
 - [x] **M2 — Sheets sync** (`sheets.ts`, `/api/sync`, `vercel.json` crons) — 503-when-unconfigured verified
 - [x] **M3 — 7 stub pages + detail routes** — all built; `stub.tsx` deleted; all 6 reference bugs fixed
 - [x] **M4 — India heatmap + ad recommendations** — vendored MIT TopoJSON, 116-city `city_geo`, choropleth + quadrant bubbles, salesperson-filterable
-- [ ] **M5 — Mobile + perf + verification** ← *≈80%, see "Resume here" above*
+- [x] **M5 — Mobile + perf + verification** — 390px pass, Suspense streaming, map code-split, export + detail
+  routes, Lighthouse (83/90 perf, 100 a11y/bp/seo), exhaustive visual diff (all 6 reference bugs fixed), pushed to GitHub
 
 ### What the app does now
 

@@ -93,7 +93,7 @@ See `PROGRESS.md` for where work stopped. See `plan.md` for the architecture.
 
 ### Known gap (carry into M5)
 
-- [ ] `orders-controls.tsx` links to **`/api/export/orders`, which does not exist** — the "Export to Excel" button 404s
+- [x] `orders-controls.tsx` links to `/api/export/orders` — **resolved in M5** (route built; returns a real `.xlsx`, honours filters). See "Bugs found and fixed in M5" below.
 
 ## M4 — India heatmap + ad recommendations
 
@@ -114,7 +114,7 @@ See `PROGRESS.md` for where work stopped. See `plan.md` for the architecture.
 - [x] Real recommendation on seeded data: **Patna +₹26,26,630 headroom** (basket ₹4,77,569 on 2 orders vs median 8), then Delhi, Nagpur
 - [x] Gate passes
 
-## M5 — Mobile, perf, final verification  *(≈80% done — paused here)*
+## M5 — Mobile, perf, final verification  *(complete — only externally-blocked items remain)*
 
 - [x] **17/17 routes verified at 390×844** — zero horizontal body overflow; tables scroll inside their own containers; KPI grids 2-up
 - [x] **19/19 routes return 200** and contain no `NaN`, no `// End of KPIs`, no `START PERFORMER`, no stub text, no `undefined` leak
@@ -148,5 +148,10 @@ See `PROGRESS.md` for where work stopped. See `plan.md` for the architecture.
       scatter). **No app defects found.** (One capture-tooling caveat: `captureBeyondViewport` fails to
       composite Recharts cartesian charts in headless screenshots — the DOM proved bars present with correct
       geometry/fill; capturing in-viewport renders them. This is a screenshot artifact, not an app bug.)
-- [ ] Swap `DATABASE_URL` to Supabase/Neon and re-run migrations *(**blocked**: needs the user's connection string)*
-- [ ] `git add` the vendored `public/geo/india-states.topo.json` and commit (nothing has been committed yet)
+- [x] **First commit + push to GitHub** — project has its own repo; `main` pushed to
+      `admindtale2026/Ecom-Analytics-Pro` (commits `23ab853` build + `ec07a83` docs). Vendored
+      `public/geo/india-states.topo.json` (232 KB) included; `.env*` / `.pglite` / `node_modules` excluded.
+- [ ] Swap `DATABASE_URL` to Neon and re-run migrations — *deferred by decision* (staying on PGlite until the
+      finish line; see the Hosting/Database rows in `PROGRESS.md` + `~/.claude/plans/magical-hopping-wall.md`).
+- [ ] End-to-end delta-sync-twice against a **real Google sheet** — *deferred*: needs `GOOGLE_SERVICE_ACCOUNT_JSON`
+      (the underlying upsert idempotency is already covered by the M1 synthetic-sheet test).
