@@ -39,7 +39,7 @@ This file is the single source of truth for "where did we stop and what's next".
 
 | Decision | Choice |
 | --- | --- |
-| Data source | Excel/CSV **upload works today**; Google Sheets sync coded but dormant until `GOOGLE_SERVICE_ACCOUNT_JSON` is set |
+| Data source | **Live: public Google Sheet over CSV** (no service account). One link-shared sheet, 6 grids = 3 stores × (summary+detail), mapped in `src/lib/ingest/sheet-manifest.ts`. Excel/CSV upload still works. Real counts: modern 5329 lines/1758 summaries, homes 1050/254, decor 3/6. |
 | Sync cadence | Delta hourly + full sync nightly (03:00 IST) via `vercel.json` cron |
 | Map data | Vendored TopoJSON, no map API keys. Source: **`geohacker/india` (MIT)** — raw GeoJSON is 23MB, simplify once with `mapshaper` into `public/geo/india-states.topo.json` |
 | Hosting | **App → Vercel** (whole Next.js unit; there is no separate backend to split — RSC query Postgres directly, writes via `/api/*` route handlers). `vercel.json` crons already assume Vercel. |
