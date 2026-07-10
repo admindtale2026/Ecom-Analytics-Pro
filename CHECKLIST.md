@@ -135,7 +135,18 @@ See `PROGRESS.md` for where work stopped. See `plan.md` for the architecture.
 
 ### Remaining in M5
 
-- [ ] Lighthouse run
-- [ ] Visual side-by-side against all 41 reference screenshots (spot-checked so far, not exhaustive)
+- [x] **Lighthouse run** (production build, authenticated admin session, headless Chrome, default mobile throttling):
+      `/dashboard` → **Perf 83 · A11y 100 · Best-Practices 100 · SEO 100** (FCP 1.4s, LCP 4.2s, TBT 140ms, CLS 0);
+      `/opportunity` → **Perf 90 · A11y 100 · Best-Practices 100 · SEO 100** (FCP 0.9s, LCP 3.5s, TBT 130ms, CLS 0).
+      LCP is the only sub-90 driver; CLS is a perfect 0 on both. Reports in the job tmp dir.
+- [x] **Visual side-by-side against all 41 reference screenshots** (headless-Chrome full-page captures of all
+      18 routes at 1440px, authenticated). Every reference maps to a route; layouts match. **All 6 reference
+      bugs verified fixed on the rendered pages:** #1 Customers Avg Lifetime Value ₹7,16,194 + VIP Gross Spend
+      all real (no ₹NaN); #2 Bengaluru (not Bangalore), Calicut single; #3 no `// End of KPIs`; #4 all states
+      named / no blank row; #5 Top Performer "Shikha" (not START PERFORMER: UNKNOWN); #6 compact ₹ axes
+      (₹1.00 Cr / ₹75.00 L), not `00000`. All chart types render (line, VBar, HBar, donut, choropleth+bubbles,
+      scatter). **No app defects found.** (One capture-tooling caveat: `captureBeyondViewport` fails to
+      composite Recharts cartesian charts in headless screenshots — the DOM proved bars present with correct
+      geometry/fill; capturing in-viewport renders them. This is a screenshot artifact, not an app bug.)
 - [ ] Swap `DATABASE_URL` to Supabase/Neon and re-run migrations *(**blocked**: needs the user's connection string)*
 - [ ] `git add` the vendored `public/geo/india-states.topo.json` and commit (nothing has been committed yet)

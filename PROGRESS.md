@@ -1,6 +1,8 @@
 # PROGRESS — read this first when resuming
 
-**Last updated:** 2026-07-10 — **M0–M4 complete and gated. M5 ≈80% done.** Paused by user request.
+**Last updated:** 2026-07-10 — **M0–M4 complete and gated. M5 ≈95% done.** Lighthouse + exhaustive visual
+diff both complete (see below). Remaining: git push to GitHub (local commit `23ab853` done; push pending a
+PAT), and the Neon `DATABASE_URL` cutover (deferred by decision — staying on PGlite until the finish line).
 
 > Dev server runs on **port 3100** in this project (`npm run dev -- --port 3100`), not 3000.
 > Check `lsof -nP -iTCP:3100 -sTCP:LISTEN` before starting another.
@@ -10,8 +12,13 @@
 
 Everything builds, lints, typechecks, and every route was driven in a real browser. What's left:
 
-1. **Lighthouse run** on `/dashboard` and `/opportunity`.
-2. **Exhaustive visual diff** against all 41 images in `screenshots/` (only spot-checked so far).
+1. ~~**Lighthouse run** on `/dashboard` and `/opportunity`.~~ **DONE** — prod build + authed admin:
+   dashboard 83/100/100/100, opportunity 90/100/100/100 (perf/a11y/bp/seo). LCP is the only <90; CLS 0.
+2. ~~**Exhaustive visual diff** against all 41 images in `screenshots/`.~~ **DONE** — captured all 18 routes
+   in headless Chrome (authenticated, 1440px full-page), mapped every reference to a route, confirmed layout
+   parity and **all 6 reference bugs fixed on the rendered pages**. No app defects. (Caveat: automated
+   screenshots must capture *in-viewport*, not `captureBeyondViewport`, or Recharts cartesian charts appear
+   blank in the image only — the app renders them fine.)
 3. **`DATABASE_URL`** — still on local PGlite. Drop a Supabase/Neon string into `.env.local`, then
    `npm run db:generate && npm run db:migrate && npm run db:seed-geo`, **then restart `next dev`**
    (see the PGlite gotcha below). No code changes needed.
