@@ -55,6 +55,16 @@ export function titleCase(raw: unknown): string | null {
  */
 export const CITY_ALIASES: Record<string, string> = {
   Bangalore: "Bengaluru",
+  // Real-sheet variants of Bengaluru — misspellings and district suffixes the
+  // source uses interchangeably for the same city.
+  Banglore: "Bengaluru",
+  Bangaluru: "Bengaluru",
+  Bangalur: "Bengaluru",
+  "Bengaluru Urban": "Bengaluru",
+  "Bangalore Urban": "Bengaluru",
+  "Bangalore Rural": "Bengaluru",
+  "Bangalore North": "Bengaluru",
+  "Bangalore South": "Bengaluru",
   Bombay: "Mumbai",
   Calcutta: "Kolkata",
   Madras: "Chennai",

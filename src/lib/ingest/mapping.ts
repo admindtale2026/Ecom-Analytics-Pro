@@ -118,11 +118,32 @@ function str(v: unknown): string | null {
   return s === "" ? null : s;
 }
 
+/**
+ * Normalise a header for tolerant matching: trim, lowercase, drop spaces and
+ * underscores. Lets one mapping match `OrderId` / `Order Id` / `Order ID ` (the
+ * store tabs are inconsistent, and several carry trailing spaces).
+ */
+function normHeader(s: string): string {
+  return s.trim().toLowerCase().replace(/[\s_]+/g, "");
+}
+
 /** Transform one raw source row (keyed by source column header) into a mapped line. */
 export function mapRow(row: Record<string, unknown>, mapping: Mapping): RawMappedLine | null {
-  const get = (key: string) => row[mapping[key] ?? ""];
+  // Index the row's headers once, normalised, for tolerant fallback lookups.
+  const normIndex = new Map<string, unknown>();
+  for (const k of Object.keys(row)) normIndex.set(normHeader(k), row[k]);
+  const get = (key: string) => {
+    const src = mapping[key];
+    if (!src) return undefined;
+    if (src in row) return row[src]; // exact header wins
+    return normIndex.get(normHeader(src)); // tolerant fallback
+  };
   const orderId = str(get("orderId"));
   if (!orderId) return null; // rows without an order id are unusable
+  // These sheets carry a repeated header row mid-data; its order-id cell is the
+  // literal column name ("OrderId"/"Order Id"). Drop it so it can't become a
+  // phantom ₹0 order (and leak "Ship State Name" into the state list).
+  if (normHeader(orderId) === "orderid") return null;
 
   const out = {} as RawMappedLine;
   for (const f of CANONICAL_FIELDS) {

@@ -5,7 +5,7 @@ import { dataSources } from "@/db/schema";
 import { STORES, type StoreId } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
 import { resolveMapping } from "@/server/admin";
-import { fetchWorkbook, isSheetsConfigured } from "@/lib/ingest/sheets";
+import { fetchStoreWorkbook, isSheetsConfigured } from "@/lib/ingest/sheets";
 import {
   dropStaleBatches,
   ingestOrderLines,
@@ -37,21 +37,17 @@ async function authorize(request: Request): Promise<boolean> {
 }
 
 async function runSync(storeId: StoreId, mode: SyncMode) {
-  const [source] = await db.select().from(dataSources).where(eq(dataSources.storeId, storeId));
-  const endpoint = source?.endpointUrl;
-  if (!endpoint) {
-    throw Object.assign(new Error(`No Google Sheet configured for "${storeId}".`), { status: 400 });
-  }
-
-  const workbook = await fetchWorkbook(endpoint);
+  const workbook = await fetchStoreWorkbook(storeId);
   if (!workbook.lines.length) {
     throw Object.assign(
-      new Error(`Sheet has no data rows. Tabs seen: ${workbook.sheetNames.join(", ") || "none"}.`),
+      new Error(`Sheet detail tab has no data rows for "${storeId}".`),
       { status: 422 },
     );
   }
 
-  const mapping = await resolveMapping(storeId);
+  // Admin-editable mapping, then the manifest's per-store header patches on top
+  // (e.g. Modern dates its detail rows "Order Placed Date Time").
+  const mapping = { ...(await resolveMapping(storeId)), ...(workbook.store.mappingOverrides ?? {}) };
   const batchId = newBatchId();
 
   const lines = await ingestOrderLines(storeId, workbook.lines, mapping, {

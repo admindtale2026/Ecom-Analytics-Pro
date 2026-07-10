@@ -7,7 +7,7 @@ import { parseFilters, type SearchParams } from "@/lib/filters";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { getOrders, getOrderStates } from "@/server/orders";
 import { getSalespeople } from "@/server/common";
-import { getDataSource } from "@/server/admin";
+import { getStoreSheet } from "@/lib/ingest/sheet-manifest";
 
 export const dynamic = "force-dynamic";
 
@@ -32,18 +32,14 @@ export default async function OrdersPage({
     pageSize,
   };
 
-  const [{ rows, total }, states, people, source] = await Promise.all([
+  const [{ rows, total }, states, people] = await Promise.all([
     getOrders(f, query),
     getOrderStates(f),
     getSalespeople(),
-    getDataSource(f.storeId),
   ]);
 
-  // "Live" means both: credentials exist *and* this store has a sheet URL.
-  // Read the env directly rather than importing sheets.ts, which would pull the
-  // whole googleapis client into this page's server bundle for one boolean.
-  const syncConfigured =
-    Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON) && Boolean(source?.endpointUrl);
+  // "Live" means this store has sheet grids mapped in the manifest, which it does.
+  const syncConfigured = Boolean(getStoreSheet(f.storeId));
 
   return (
     <div className="space-y-5">

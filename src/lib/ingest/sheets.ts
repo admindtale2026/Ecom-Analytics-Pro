@@ -1,19 +1,20 @@
-import { google } from "googleapis";
+import * as XLSX from "xlsx";
+import type { StoreId } from "@/lib/constants";
 import type { Workbook } from "./workbook";
+import { SHEET_ID, STORE_SHEETS, getStoreSheet, type StoreSheet } from "./sheet-manifest";
 
 /**
- * Google Sheets reader. Produces the same shape as `parseWorkbook`, so the
- * ingest pipeline cannot tell a synced sheet from an uploaded file.
+ * Public Google Sheets reader. Produces the same shape as `parseWorkbook`, so
+ * the ingest pipeline cannot tell a synced sheet from an uploaded file.
  *
- * Dormant until GOOGLE_SERVICE_ACCOUNT_JSON is set — `isSheetsConfigured()`
- * lets callers return a clean "not configured" instead of throwing at import.
+ * Reads the sheet's CSV export endpoint — no service account, no API key. The
+ * sheet must be link-shared ("anyone with the link can view"), which it is. Each
+ * store maps to two tabs (summary + detail) via `sheet-manifest.ts`.
  */
 
-const SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"];
-const SUMMARY_HINT = /summary/i;
-
+/** True when the app has a sheet manifest to sync from (it always does now). */
 export function isSheetsConfigured(): boolean {
-  return Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  return Boolean(SHEET_ID) && Object.keys(STORE_SHEETS).length > 0;
 }
 
 /** Pull the spreadsheet id out of a full edit URL, or accept a bare id. */
@@ -22,92 +23,62 @@ export function extractSpreadsheetId(urlOrId: string): string | null {
   if (!trimmed) return null;
   const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
   if (match) return match[1];
-  // A bare id has no slashes and is comfortably long.
   return /^[a-zA-Z0-9-_]{20,}$/.test(trimmed) ? trimmed : null;
 }
 
-function authClient() {
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!raw) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON is not set.");
-  let creds: { client_email: string; private_key: string };
-  try {
-    creds = JSON.parse(raw);
-  } catch {
-    throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON.");
-  }
-  return new google.auth.JWT({
-    email: creds.client_email,
-    // Escaped newlines survive a trip through most secret stores; undo that.
-    key: creds.private_key?.replace(/\\n/g, "\n"),
-    scopes: SCOPES,
-  });
-}
-
-/** First row is the header; every later row becomes a header-keyed object. */
-function rowsToObjects(values: unknown[][]): Record<string, unknown>[] {
-  if (!values.length) return [];
-  const headers = values[0].map((h) => String(h ?? "").trim());
-  const out: Record<string, unknown>[] = [];
-  for (let r = 1; r < values.length; r++) {
-    const row = values[r];
-    // Sheets truncates trailing empties; a row shorter than the header is normal.
-    if (!row || row.every((c) => c == null || String(c).trim() === "")) continue;
-    const obj: Record<string, unknown> = {};
-    headers.forEach((h, i) => {
-      if (h) obj[h] = row[i] ?? null;
-    });
-    out.push(obj);
-  }
-  return out;
+function csvExportUrl(spreadsheetId: string, gid: number): string {
+  return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
 }
 
 /**
- * Read every tab of the spreadsheet and classify them exactly as the file
- * parser does: the tab named "…Summary" is the summary; of the rest, the widest
- * is the line-item detail.
+ * Fetch one tab as CSV and turn it into raw rows keyed by their source column
+ * header. SheetJS parses the CSV (handling quoted `"₹6,240.00"` and trailing
+ * empty columns); `defval:null` keeps absent cells as explicit nulls so `mapRow`
+ * can tell "column missing" from "cell empty".
  */
-export async function fetchWorkbook(urlOrId: string): Promise<Workbook> {
-  const spreadsheetId = extractSpreadsheetId(urlOrId);
-  if (!spreadsheetId) throw new Error(`Could not read a spreadsheet id from "${urlOrId}".`);
-
-  const sheets = google.sheets({ version: "v4", auth: authClient() });
-  const meta = await sheets.spreadsheets.get({ spreadsheetId });
-  const sheetNames = (meta.data.sheets ?? [])
-    .map((s) => s.properties?.title)
-    .filter((t): t is string => Boolean(t));
-
-  if (!sheetNames.length) return { lines: [], summary: null, sheetNames: [] };
-
-  // One batched call beats N round-trips.
-  const res = await sheets.spreadsheets.values.batchGet({
-    spreadsheetId,
-    ranges: sheetNames,
-    valueRenderOption: "UNFORMATTED_VALUE",
-    dateTimeRenderOption: "FORMATTED_STRING",
+async function fetchTabRows(
+  spreadsheetId: string,
+  gid: number,
+): Promise<Record<string, unknown>[]> {
+  const res = await fetch(csvExportUrl(spreadsheetId, gid), {
+    redirect: "follow",
+    // Never serve a stale sync from an edge/data cache.
+    cache: "no-store",
   });
-
-  const byName = new Map<string, Record<string, unknown>[]>();
-  (res.data.valueRanges ?? []).forEach((vr, i) => {
-    byName.set(sheetNames[i], rowsToObjects((vr.values ?? []) as unknown[][]));
-  });
-
-  const summaryName = sheetNames.find((n) => SUMMARY_HINT.test(n)) ?? null;
-
-  let lines: Record<string, unknown>[] = [];
-  let widest = -1;
-  for (const name of sheetNames) {
-    if (name === summaryName) continue;
-    const rows = byName.get(name) ?? [];
-    const width = rows.length ? Object.keys(rows[0]).length : 0;
-    if (width > widest) {
-      widest = width;
-      lines = rows;
-    }
+  if (!res.ok) {
+    throw new Error(
+      `Could not read sheet tab gid ${gid} (HTTP ${res.status}). Is the sheet link-shared as "anyone with the link can view"?`,
+    );
   }
+  const text = await res.text();
+  const wb = XLSX.read(text, { type: "string", raw: false });
+  const first = wb.SheetNames[0];
+  if (!first) return [];
+  return XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[first], { defval: null });
+}
 
+/**
+ * Read one store's two tabs into the `Workbook` shape the pipeline consumes:
+ * `lines` = the wide detail tab (→ order_lines), `summary` = the lightweight
+ * summary tab (→ order_summary / "Not Processed").
+ */
+export async function fetchStoreWorkbook(
+  storeId: StoreId,
+): Promise<Workbook & { store: StoreSheet }> {
+  const store = getStoreSheet(storeId);
+  if (!store) {
+    throw Object.assign(new Error(`No sheet grids mapped for store "${storeId}".`), {
+      status: 400,
+    });
+  }
+  const [lines, summary] = await Promise.all([
+    fetchTabRows(SHEET_ID, store.detailGid),
+    fetchTabRows(SHEET_ID, store.summaryGid),
+  ]);
   return {
     lines,
-    summary: summaryName ? (byName.get(summaryName) ?? []) : null,
-    sheetNames,
+    summary,
+    sheetNames: [`gid:${store.summaryGid}`, `gid:${store.detailGid}`],
+    store,
   };
 }

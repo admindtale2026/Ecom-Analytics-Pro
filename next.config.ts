@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [
     "@electric-sql/pglite",
     "postgres",
-    "googleapis",
     "bcryptjs",
   ],
   // Pin the workspace root (a stray lockfile exists above the project).
