@@ -1,0 +1,484 @@
+- generic [active] [ref=f23e1]:
+  - generic [ref=f23e3]:
+    - banner [ref=f23e4]:
+      - generic [ref=f23e6]:
+        - button "Open menu" [ref=f23e7]
+        - heading "Regions" [level=1] [ref=f23e9]
+      - generic [ref=f23e11]:
+        - button "Modern" [ref=f23e12]
+        - button "Sales Team" [ref=f23e20]
+        - button "All Time" [ref=f23e27]
+        - button "Export PDF" [ref=f23e33]
+    - main [ref=f23e38]:
+      - generic [ref=f23e40]:
+        - generic [ref=f23e41]:
+          - generic [ref=f23e42]:
+            - paragraph [ref=f23e48]: Dominant State
+            - paragraph [ref=f23e49]: Uttar Pradesh
+            - paragraph [ref=f23e50]: ₹2,93,98,453
+          - generic [ref=f23e51]:
+            - paragraph [ref=f23e58]: Top Performing City
+            - paragraph [ref=f23e59]: Chennai
+            - paragraph [ref=f23e60]: ₹2,48,55,939
+          - generic [ref=f23e61]:
+            - paragraph [ref=f23e66]: Active Markets
+            - paragraph [ref=f23e67]: "26"
+          - generic [ref=f23e68]:
+            - paragraph [ref=f23e74]: Avg Market Value
+            - paragraph [ref=f23e75]: ₹54,26,549
+        - generic [ref=f23e76]:
+          - generic [ref=f23e85]:
+            - heading "State-wise Contribution" [level=3] [ref=f23e86]
+            - paragraph [ref=f23e87]: Total revenue generated per primary state
+          - generic [ref=f23e98]:
+            - heading "Urban Sales Concentration" [level=3] [ref=f23e99]
+            - paragraph [ref=f23e100]: Revenue share across top metropolitan areas
+        - generic [ref=f23e103]:
+          - generic [ref=f23e107]:
+            - heading "State Performance List" [level=3] [ref=f23e108]
+            - paragraph [ref=f23e109]: Select a state to view comprehensive local analytics
+          - table [ref=f23e111]:
+            - rowgroup [ref=f23e112]:
+              - row [ref=f23e113]:
+                - columnheader "State" [ref=f23e114]
+                - columnheader "Orders" [ref=f23e115]
+                - columnheader "Units Sold" [ref=f23e116]
+                - columnheader "Avg. Order Value" [ref=f23e117]
+                - columnheader "Total Revenue" [ref=f23e118]
+            - rowgroup [ref=f23e119]:
+              - row [ref=f23e120]:
+                - cell [ref=f23e121]:
+                  - link "Uttar Pradesh" [ref=f23e122] [cursor=pointer]:
+                    - /url: /regions/Uttar%20Pradesh?store=modern
+                - cell "23" [ref=f23e128]
+                - cell "459" [ref=f23e129]
+                - cell "₹12,78,194" [ref=f23e130]
+                - cell "₹2,93,98,453" [ref=f23e131]
+              - row [ref=f23e135]:
+                - cell [ref=f23e136]:
+                  - link "Tamil Nadu" [ref=f23e137] [cursor=pointer]:
+                    - /url: /regions/Tamil%20Nadu?store=modern
+                - cell "60" [ref=f23e143]
+                - cell "419" [ref=f23e144]
+                - cell "₹4,26,767" [ref=f23e145]
+                - cell "₹2,56,06,016" [ref=f23e146]
+              - row [ref=f23e150]:
+                - cell [ref=f23e151]:
+                  - link "Karnataka" [ref=f23e152] [cursor=pointer]:
+                    - /url: /regions/Karnataka?store=modern
+                - cell "49" [ref=f23e158]
+                - cell "276" [ref=f23e159]
+                - cell "₹4,00,531" [ref=f23e160]
+                - cell "₹1,96,25,997" [ref=f23e161]
+              - row [ref=f23e165]:
+                - cell [ref=f23e166]:
+                  - link "Maharashtra" [ref=f23e167] [cursor=pointer]:
+                    - /url: /regions/Maharashtra?store=modern
+                - cell "61" [ref=f23e173]
+                - cell "273" [ref=f23e174]
+                - cell "₹2,78,092" [ref=f23e175]
+                - cell "₹1,69,63,630" [ref=f23e176]
+              - row [ref=f23e180]:
+                - cell [ref=f23e181]:
+                  - link "Telangana" [ref=f23e182] [cursor=pointer]:
+                    - /url: /regions/Telangana?store=modern
+                - cell "55" [ref=f23e188]
+                - cell "342" [ref=f23e189]
+                - cell "₹2,98,501" [ref=f23e190]
+                - cell "₹1,64,17,537" [ref=f23e191]
+              - row [ref=f23e195]:
+                - cell [ref=f23e196]:
+                  - link "Kerala" [ref=f23e197] [cursor=pointer]:
+                    - /url: /regions/Kerala?store=modern
+                - cell "47" [ref=f23e203]
+                - cell "198" [ref=f23e204]
+                - cell "₹2,93,045" [ref=f23e205]
+                - cell "₹1,37,73,101" [ref=f23e206]
+              - row [ref=f23e210]:
+                - cell [ref=f23e211]:
+                  - link "Gujarat" [ref=f23e212] [cursor=pointer]:
+                    - /url: /regions/Gujarat?store=modern
+                - cell "22" [ref=f23e218]
+                - cell "80" [ref=f23e219]
+                - cell "₹2,49,963" [ref=f23e220]
+                - cell "₹54,99,181" [ref=f23e221]
+              - row [ref=f23e225]:
+                - cell [ref=f23e226]:
+                  - link "Goa" [ref=f23e227] [cursor=pointer]:
+                    - /url: /regions/Goa?store=modern
+                - cell "6" [ref=f23e233]
+                - cell "29" [ref=f23e234]
+                - cell "₹3,60,244" [ref=f23e235]
+                - cell "₹21,61,461" [ref=f23e236]
+              - row [ref=f23e240]:
+                - cell [ref=f23e241]:
+                  - link "Punjab" [ref=f23e242] [cursor=pointer]:
+                    - /url: /regions/Punjab?store=modern
+                - cell "6" [ref=f23e248]
+                - cell "24" [ref=f23e249]
+                - cell "₹3,34,067" [ref=f23e250]
+                - cell "₹20,04,402" [ref=f23e251]
+              - row [ref=f23e255]:
+                - cell [ref=f23e256]:
+                  - link "Odisha" [ref=f23e257] [cursor=pointer]:
+                    - /url: /regions/Odisha?store=modern
+                - cell "8" [ref=f23e263]
+                - cell "29" [ref=f23e264]
+                - cell "₹2,35,769" [ref=f23e265]
+                - cell "₹18,86,151" [ref=f23e266]
+              - row [ref=f23e270]:
+                - cell [ref=f23e271]:
+                  - link "Delhi" [ref=f23e272] [cursor=pointer]:
+                    - /url: /regions/Delhi?store=modern
+                - cell "5" [ref=f23e278]
+                - cell "21" [ref=f23e279]
+                - cell "₹3,47,113" [ref=f23e280]
+                - cell "₹17,35,567" [ref=f23e281]
+              - row [ref=f23e285]:
+                - cell [ref=f23e286]:
+                  - link "Rajasthan" [ref=f23e287] [cursor=pointer]:
+                    - /url: /regions/Rajasthan?store=modern
+                - cell "9" [ref=f23e293]
+                - cell "29" [ref=f23e294]
+                - cell "₹1,83,008" [ref=f23e295]
+                - cell "₹16,47,073" [ref=f23e296]
+              - row [ref=f23e300]:
+                - cell [ref=f23e301]:
+                  - link "West Bengal" [ref=f23e302] [cursor=pointer]:
+                    - /url: /regions/West%20Bengal?store=modern
+                - cell "8" [ref=f23e308]
+                - cell "31" [ref=f23e309]
+                - cell "₹1,58,683" [ref=f23e310]
+                - cell "₹12,69,460" [ref=f23e311]
+              - row [ref=f23e315]:
+                - cell [ref=f23e316]:
+                  - link "Madhya Pradesh" [ref=f23e317] [cursor=pointer]:
+                    - /url: /regions/Madhya%20Pradesh?store=modern
+                - cell "4" [ref=f23e323]
+                - cell "19" [ref=f23e324]
+                - cell "₹2,58,073" [ref=f23e325]
+                - cell "₹10,32,291" [ref=f23e326]
+              - row [ref=f23e330]:
+                - cell [ref=f23e331]:
+                  - link "Bihar" [ref=f23e332] [cursor=pointer]:
+                    - /url: /regions/Bihar?store=modern
+                - cell "2" [ref=f23e338]
+                - cell "11" [ref=f23e339]
+                - cell "₹4,77,569" [ref=f23e340]
+                - cell "₹9,55,138" [ref=f23e341]
+              - row [ref=f23e345]:
+                - cell [ref=f23e346]:
+                  - link "Haryana" [ref=f23e347] [cursor=pointer]:
+                    - /url: /regions/Haryana?store=modern
+                - cell "7" [ref=f23e353]
+                - cell "25" [ref=f23e354]
+                - cell "₹1,30,505" [ref=f23e355]
+                - cell "₹9,13,532" [ref=f23e356]
+              - row [ref=f23e360]:
+                - cell [ref=f23e361]:
+                  - link "Uttarakhand" [ref=f23e362] [cursor=pointer]:
+                    - /url: /regions/Uttarakhand?store=modern
+                - cell "1" [ref=f23e368]
+                - cell "5" [ref=f23e369]
+                - cell "₹2,01,277" [ref=f23e370]
+                - cell "₹2,01,277" [ref=f23e371]
+        - generic [ref=f23e376]:
+          - generic [ref=f23e380]:
+            - heading "Regional Performance List" [level=3] [ref=f23e381]
+            - paragraph [ref=f23e382]: Drill down into specific city and state metrics
+          - table [ref=f23e384]:
+            - rowgroup [ref=f23e385]:
+              - row [ref=f23e386]:
+                - columnheader "Location" [ref=f23e387]
+                - columnheader "Orders" [ref=f23e388]
+                - columnheader "Units Sold" [ref=f23e389]
+                - columnheader "Avg. Order Value" [ref=f23e390]
+                - columnheader "Total Revenue" [ref=f23e391]
+            - rowgroup [ref=f23e392]:
+              - row [ref=f23e393]:
+                - cell [ref=f23e394]:
+                  - link "Chennai Tamil Nadu" [ref=f23e395] [cursor=pointer]:
+                    - /url: /regions/city/Chennai?store=modern
+                    - generic [ref=f23e400]:
+                      - generic [ref=f23e401]: Chennai
+                      - generic [ref=f23e402]: Tamil Nadu
+                - cell "55" [ref=f23e403]
+                - cell "401" [ref=f23e404]
+                - cell "₹4,51,926" [ref=f23e405]
+                - cell "₹2,48,55,939" [ref=f23e406]
+              - row [ref=f23e407]:
+                - cell [ref=f23e408]:
+                  - link "Bengaluru Karnataka" [ref=f23e409] [cursor=pointer]:
+                    - /url: /regions/city/Bengaluru?store=modern
+                    - generic [ref=f23e414]:
+                      - generic [ref=f23e415]: Bengaluru
+                      - generic [ref=f23e416]: Karnataka
+                - cell "43" [ref=f23e417]
+                - cell "257" [ref=f23e418]
+                - cell "₹4,19,908" [ref=f23e419]
+                - cell "₹1,80,56,023" [ref=f23e420]
+              - row [ref=f23e421]:
+                - cell [ref=f23e422]:
+                  - link "Hyderabad Telangana" [ref=f23e423] [cursor=pointer]:
+                    - /url: /regions/city/Hyderabad?store=modern
+                    - generic [ref=f23e428]:
+                      - generic [ref=f23e429]: Hyderabad
+                      - generic [ref=f23e430]: Telangana
+                - cell "55" [ref=f23e431]
+                - cell "342" [ref=f23e432]
+                - cell "₹2,98,501" [ref=f23e433]
+                - cell "₹1,64,17,537" [ref=f23e434]
+              - row [ref=f23e435]:
+                - cell [ref=f23e436]:
+                  - link "Lucknow Uttar Pradesh" [ref=f23e437] [cursor=pointer]:
+                    - /url: /regions/city/Lucknow?store=modern
+                    - generic [ref=f23e442]:
+                      - generic [ref=f23e443]: Lucknow
+                      - generic [ref=f23e444]: Uttar Pradesh
+                - cell "11" [ref=f23e445]
+                - cell "260" [ref=f23e446]
+                - cell "₹13,67,964" [ref=f23e447]
+                - cell "₹1,50,47,603" [ref=f23e448]
+              - row [ref=f23e449]:
+                - cell [ref=f23e450]:
+                  - link "Noida Uttar Pradesh" [ref=f23e451] [cursor=pointer]:
+                    - /url: /regions/city/Noida?store=modern
+                    - generic [ref=f23e456]:
+                      - generic [ref=f23e457]: Noida
+                      - generic [ref=f23e458]: Uttar Pradesh
+                - cell "12" [ref=f23e459]
+                - cell "199" [ref=f23e460]
+                - cell "₹11,95,904" [ref=f23e461]
+                - cell "₹1,43,50,850" [ref=f23e462]
+              - row [ref=f23e463]:
+                - cell [ref=f23e464]:
+                  - link "Mumbai Maharashtra" [ref=f23e465] [cursor=pointer]:
+                    - /url: /regions/city/Mumbai?store=modern
+                    - generic [ref=f23e470]:
+                      - generic [ref=f23e471]: Mumbai
+                      - generic [ref=f23e472]: Maharashtra
+                - cell "44" [ref=f23e473]
+                - cell "183" [ref=f23e474]
+                - cell "₹2,72,287" [ref=f23e475]
+                - cell "₹1,19,80,611" [ref=f23e476]
+              - row [ref=f23e477]:
+                - cell [ref=f23e478]:
+                  - link "Calicut Kerala" [ref=f23e479] [cursor=pointer]:
+                    - /url: /regions/city/Calicut?store=modern
+                    - generic [ref=f23e484]:
+                      - generic [ref=f23e485]: Calicut
+                      - generic [ref=f23e486]: Kerala
+                - cell "23" [ref=f23e487]
+                - cell "89" [ref=f23e488]
+                - cell "₹2,56,207" [ref=f23e489]
+                - cell "₹58,92,762" [ref=f23e490]
+              - row [ref=f23e491]:
+                - cell [ref=f23e492]:
+                  - link "Kochi Kerala" [ref=f23e493] [cursor=pointer]:
+                    - /url: /regions/city/Kochi?store=modern
+                    - generic [ref=f23e498]:
+                      - generic [ref=f23e499]: Kochi
+                      - generic [ref=f23e500]: Kerala
+                - cell "16" [ref=f23e501]
+                - cell "74" [ref=f23e502]
+                - cell "₹3,11,514" [ref=f23e503]
+                - cell "₹49,84,230" [ref=f23e504]
+              - row [ref=f23e505]:
+                - cell [ref=f23e506]:
+                  - link "Ahmedabad Gujarat" [ref=f23e507] [cursor=pointer]:
+                    - /url: /regions/city/Ahmedabad?store=modern
+                    - generic [ref=f23e512]:
+                      - generic [ref=f23e513]: Ahmedabad
+                      - generic [ref=f23e514]: Gujarat
+                - cell "17" [ref=f23e515]
+                - cell "66" [ref=f23e516]
+                - cell "₹2,54,744" [ref=f23e517]
+                - cell "₹43,30,640" [ref=f23e518]
+              - row [ref=f23e519]:
+                - cell [ref=f23e520]:
+                  - link "Muvattupuzha Kerala" [ref=f23e521] [cursor=pointer]:
+                    - /url: /regions/city/Muvattupuzha?store=modern
+                    - generic [ref=f23e526]:
+                      - generic [ref=f23e527]: Muvattupuzha
+                      - generic [ref=f23e528]: Kerala
+                - cell "7" [ref=f23e529]
+                - cell "32" [ref=f23e530]
+                - cell "₹3,97,824" [ref=f23e531]
+                - cell "₹27,84,770" [ref=f23e532]
+              - row [ref=f23e533]:
+                - cell [ref=f23e534]:
+                  - link "Nagpur Maharashtra" [ref=f23e535] [cursor=pointer]:
+                    - /url: /regions/city/Nagpur?store=modern
+                    - generic [ref=f23e540]:
+                      - generic [ref=f23e541]: Nagpur
+                      - generic [ref=f23e542]: Maharashtra
+                - cell "6" [ref=f23e543]
+                - cell "30" [ref=f23e544]
+                - cell "₹4,31,683" [ref=f23e545]
+                - cell "₹25,90,098" [ref=f23e546]
+              - row [ref=f23e547]:
+                - cell [ref=f23e548]:
+                  - link "Pune Maharashtra" [ref=f23e549] [cursor=pointer]:
+                    - /url: /regions/city/Pune?store=modern
+                    - generic [ref=f23e554]:
+                      - generic [ref=f23e555]: Pune
+                      - generic [ref=f23e556]: Maharashtra
+                - cell "11" [ref=f23e557]
+                - cell "60" [ref=f23e558]
+                - cell "₹2,17,538" [ref=f23e559]
+                - cell "₹23,92,921" [ref=f23e560]
+              - row [ref=f23e561]:
+                - cell [ref=f23e562]:
+                  - link "Panaji Goa" [ref=f23e563] [cursor=pointer]:
+                    - /url: /regions/city/Panaji?store=modern
+                    - generic [ref=f23e568]:
+                      - generic [ref=f23e569]: Panaji
+                      - generic [ref=f23e570]: Goa
+                - cell "6" [ref=f23e571]
+                - cell "29" [ref=f23e572]
+                - cell "₹3,60,244" [ref=f23e573]
+                - cell "₹21,61,461" [ref=f23e574]
+              - row [ref=f23e575]:
+                - cell [ref=f23e576]:
+                  - link "Chandigarh Punjab" [ref=f23e577] [cursor=pointer]:
+                    - /url: /regions/city/Chandigarh?store=modern
+                    - generic [ref=f23e582]:
+                      - generic [ref=f23e583]: Chandigarh
+                      - generic [ref=f23e584]: Punjab
+                - cell "6" [ref=f23e585]
+                - cell "24" [ref=f23e586]
+                - cell "₹3,34,067" [ref=f23e587]
+                - cell "₹20,04,402" [ref=f23e588]
+              - row [ref=f23e589]:
+                - cell [ref=f23e590]:
+                  - link "Bhubaneswar Odisha" [ref=f23e591] [cursor=pointer]:
+                    - /url: /regions/city/Bhubaneswar?store=modern
+                    - generic [ref=f23e596]:
+                      - generic [ref=f23e597]: Bhubaneswar
+                      - generic [ref=f23e598]: Odisha
+                - cell "8" [ref=f23e599]
+                - cell "29" [ref=f23e600]
+                - cell "₹2,35,769" [ref=f23e601]
+                - cell "₹18,86,151" [ref=f23e602]
+              - row [ref=f23e603]:
+                - cell [ref=f23e604]:
+                  - link "Delhi Delhi" [ref=f23e605] [cursor=pointer]:
+                    - /url: /regions/city/Delhi?store=modern
+                    - generic [ref=f23e610]:
+                      - generic [ref=f23e611]: Delhi
+                      - generic [ref=f23e612]: Delhi
+                - cell "5" [ref=f23e613]
+                - cell "21" [ref=f23e614]
+                - cell "₹3,47,113" [ref=f23e615]
+                - cell "₹17,35,567" [ref=f23e616]
+              - row [ref=f23e617]:
+                - cell [ref=f23e618]:
+                  - link "Jaipur Rajasthan" [ref=f23e619] [cursor=pointer]:
+                    - /url: /regions/city/Jaipur?store=modern
+                    - generic [ref=f23e624]:
+                      - generic [ref=f23e625]: Jaipur
+                      - generic [ref=f23e626]: Rajasthan
+                - cell "9" [ref=f23e627]
+                - cell "29" [ref=f23e628]
+                - cell "₹1,83,008" [ref=f23e629]
+                - cell "₹16,47,073" [ref=f23e630]
+              - row [ref=f23e631]:
+                - cell [ref=f23e632]:
+                  - link "Mangalore Karnataka" [ref=f23e633] [cursor=pointer]:
+                    - /url: /regions/city/Mangalore?store=modern
+                    - generic [ref=f23e638]:
+                      - generic [ref=f23e639]: Mangalore
+                      - generic [ref=f23e640]: Karnataka
+                - cell "6" [ref=f23e641]
+                - cell "19" [ref=f23e642]
+                - cell "₹2,61,662" [ref=f23e643]
+                - cell "₹15,69,974" [ref=f23e644]
+              - row [ref=f23e645]:
+                - cell [ref=f23e646]:
+                  - link "Kolkata West Bengal" [ref=f23e647] [cursor=pointer]:
+                    - /url: /regions/city/Kolkata?store=modern
+                    - generic [ref=f23e652]:
+                      - generic [ref=f23e653]: Kolkata
+                      - generic [ref=f23e654]: West Bengal
+                - cell "8" [ref=f23e655]
+                - cell "31" [ref=f23e656]
+                - cell "₹1,58,683" [ref=f23e657]
+                - cell "₹12,69,460" [ref=f23e658]
+              - row [ref=f23e659]:
+                - cell [ref=f23e660]:
+                  - link "Sarigam Gujarat" [ref=f23e661] [cursor=pointer]:
+                    - /url: /regions/city/Sarigam?store=modern
+                    - generic [ref=f23e666]:
+                      - generic [ref=f23e667]: Sarigam
+                      - generic [ref=f23e668]: Gujarat
+                - cell "5" [ref=f23e669]
+                - cell "14" [ref=f23e670]
+                - cell "₹2,33,708" [ref=f23e671]
+                - cell "₹11,68,541" [ref=f23e672]
+              - row [ref=f23e673]:
+                - cell [ref=f23e674]:
+                  - link "Indore Madhya Pradesh" [ref=f23e675] [cursor=pointer]:
+                    - /url: /regions/city/Indore?store=modern
+                    - generic [ref=f23e680]:
+                      - generic [ref=f23e681]: Indore
+                      - generic [ref=f23e682]: Madhya Pradesh
+                - cell "4" [ref=f23e683]
+                - cell "19" [ref=f23e684]
+                - cell "₹2,58,073" [ref=f23e685]
+                - cell "₹10,32,291" [ref=f23e686]
+              - row [ref=f23e687]:
+                - cell [ref=f23e688]:
+                  - link "Patna Bihar" [ref=f23e689] [cursor=pointer]:
+                    - /url: /regions/city/Patna?store=modern
+                    - generic [ref=f23e694]:
+                      - generic [ref=f23e695]: Patna
+                      - generic [ref=f23e696]: Bihar
+                - cell "2" [ref=f23e697]
+                - cell "11" [ref=f23e698]
+                - cell "₹4,77,569" [ref=f23e699]
+                - cell "₹9,55,138" [ref=f23e700]
+              - row [ref=f23e701]:
+                - cell [ref=f23e702]:
+                  - link "Gurgaon Haryana" [ref=f23e703] [cursor=pointer]:
+                    - /url: /regions/city/Gurgaon?store=modern
+                    - generic [ref=f23e708]:
+                      - generic [ref=f23e709]: Gurgaon
+                      - generic [ref=f23e710]: Haryana
+                - cell "7" [ref=f23e711]
+                - cell "25" [ref=f23e712]
+                - cell "₹1,30,505" [ref=f23e713]
+                - cell "₹9,13,532" [ref=f23e714]
+              - row [ref=f23e715]:
+                - cell [ref=f23e716]:
+                  - link "Coimbatore Tamil Nadu" [ref=f23e717] [cursor=pointer]:
+                    - /url: /regions/city/Coimbatore?store=modern
+                    - generic [ref=f23e722]:
+                      - generic [ref=f23e723]: Coimbatore
+                      - generic [ref=f23e724]: Tamil Nadu
+                - cell "5" [ref=f23e725]
+                - cell "18" [ref=f23e726]
+                - cell "₹1,50,015" [ref=f23e727]
+                - cell "₹7,50,077" [ref=f23e728]
+              - row [ref=f23e729]:
+                - cell [ref=f23e730]:
+                  - link "Dehradun Uttarakhand" [ref=f23e731] [cursor=pointer]:
+                    - /url: /regions/city/Dehradun?store=modern
+                    - generic [ref=f23e736]:
+                      - generic [ref=f23e737]: Dehradun
+                      - generic [ref=f23e738]: Uttarakhand
+                - cell "1" [ref=f23e739]
+                - cell "5" [ref=f23e740]
+                - cell "₹2,01,277" [ref=f23e741]
+                - cell "₹2,01,277" [ref=f23e742]
+              - row [ref=f23e743]:
+                - cell [ref=f23e744]:
+                  - link "Thiruvananthapuram Kerala" [ref=f23e745] [cursor=pointer]:
+                    - /url: /regions/city/Thiruvananthapuram?store=modern
+                    - generic [ref=f23e750]:
+                      - generic [ref=f23e751]: Thiruvananthapuram
+                      - generic [ref=f23e752]: Kerala
+                - cell "1" [ref=f23e753]
+                - cell "3" [ref=f23e754]
+                - cell "₹1,11,339" [ref=f23e755]
+                - cell "₹1,11,339" [ref=f23e756]
+  - button "Open Next.js Dev Tools" [ref=f23e762] [cursor=pointer]

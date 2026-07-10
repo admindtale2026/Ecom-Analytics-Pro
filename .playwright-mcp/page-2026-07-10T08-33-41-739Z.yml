@@ -1,0 +1,134 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - complementary [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - link "EA EcomAnalytics" [ref=f1e5] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=f1e6]: EA
+          - generic [ref=f1e7]: EcomAnalytics
+        - navigation [ref=f1e8]:
+          - paragraph [ref=f1e9]: Main Menu
+          - link "Dashboard" [ref=f1e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Orders Data" [ref=f1e16] [cursor=pointer]:
+            - /url: /orders
+          - link "Analytics" [ref=f1e19] [cursor=pointer]:
+            - /url: /analytics
+          - link "Sales Team" [ref=f1e22] [cursor=pointer]:
+            - /url: /sales-team
+          - link "Customers" [ref=f1e28] [cursor=pointer]:
+            - /url: /customers
+          - link "Inventory" [ref=f1e31] [cursor=pointer]:
+            - /url: /inventory
+          - link "Not Processed" [ref=f1e36] [cursor=pointer]:
+            - /url: /not-processed
+          - link "Regions" [ref=f1e43] [cursor=pointer]:
+            - /url: /regions
+          - link "Ad Opportunity" [ref=f1e47] [cursor=pointer]:
+            - /url: /opportunity
+          - paragraph [ref=f1e50]: System
+          - link "Manage Users" [ref=f1e51] [cursor=pointer]:
+            - /url: /admin/users
+          - link "Admin Settings" [ref=f1e64] [cursor=pointer]:
+            - /url: /admin/settings
+        - generic [ref=f1e68]:
+          - generic [ref=f1e69]:
+            - generic [ref=f1e70]: J
+            - generic [ref=f1e71]:
+              - paragraph [ref=f1e72]: Joju
+              - paragraph [ref=f1e73]: admin
+          - link "Sign Out" [ref=f1e74] [cursor=pointer]:
+            - /url: /api/auth/signout
+    - generic [ref=f1e78]:
+      - banner [ref=f1e79]:
+        - generic [ref=f1e80]:
+          - heading "Dashboard" [level=1] [ref=f1e82]
+          - generic [ref=f1e84]:
+            - button "Modern" [ref=f1e85]
+            - button "Sales Team" [ref=f1e93]
+            - button "All Time" [ref=f1e100]
+            - button "Export PDF" [ref=f1e106]
+      - main [ref=f1e111]:
+        - generic [ref=f1e113]:
+          - generic [ref=f1e114]:
+            - heading "Business Overview" [level=2] [ref=f1e115]
+            - paragraph [ref=f1e116]:
+              - generic [ref=f1e117]: All Time
+              - generic [ref=f1e118]: modern store
+          - generic [ref=f1e119]:
+            - generic [ref=f1e120]:
+              - paragraph [ref=f1e125]: Gross Revenue
+              - paragraph [ref=f1e126]: ₹14,10,90,267
+            - generic [ref=f1e127]:
+              - paragraph [ref=f1e133]: Total Orders
+              - paragraph [ref=f1e134]: "373"
+            - generic [ref=f1e135]:
+              - paragraph [ref=f1e148]: Total Volume (Units)
+              - paragraph [ref=f1e149]: 2,270
+            - generic [ref=f1e150]:
+              - paragraph [ref=f1e155]: Avg Order Value
+              - paragraph [ref=f1e156]: ₹3,78,258
+          - generic [ref=f1e165]:
+            - heading "Revenue Performance" [level=3] [ref=f1e166]
+            - paragraph [ref=f1e167]: Daily revenue fluctuations over the period
+          - generic [ref=f1e169]:
+            - generic [ref=f1e171]:
+              - generic [ref=f1e174]:
+                - heading "Salesperson Performance" [level=3] [ref=f1e175]
+                - paragraph [ref=f1e176]: Top performing sales representatives
+              - generic [ref=f1e177]:
+                - generic [ref=f1e179]:
+                  - generic [ref=f1e180]:
+                    - generic [ref=f1e181]: S
+                    - generic [ref=f1e182]: Shikha
+                    - generic [ref=f1e183]: "23"
+                  - generic [ref=f1e184]: ₹1,36,13,492
+                - generic [ref=f1e188]:
+                  - generic [ref=f1e189]:
+                    - generic [ref=f1e190]: S
+                    - generic [ref=f1e191]: Swetha
+                    - generic [ref=f1e192]: "23"
+                  - generic [ref=f1e193]: ₹1,35,30,014
+                - generic [ref=f1e197]:
+                  - generic [ref=f1e198]:
+                    - generic [ref=f1e199]: S
+                    - generic [ref=f1e200]: Santhosh
+                    - generic [ref=f1e201]: "25"
+                  - generic [ref=f1e202]: ₹1,22,46,805
+                - generic [ref=f1e206]:
+                  - generic [ref=f1e207]:
+                    - generic [ref=f1e208]: T
+                    - generic [ref=f1e209]: Talu
+                    - generic [ref=f1e210]: "31"
+                  - generic [ref=f1e211]: ₹1,18,41,942
+                - generic [ref=f1e215]:
+                  - generic [ref=f1e216]:
+                    - generic [ref=f1e217]: S
+                    - generic [ref=f1e218]: Sajeesh
+                    - generic [ref=f1e219]: "27"
+                  - generic [ref=f1e220]: ₹1,07,78,823
+                - generic [ref=f1e224]:
+                  - generic [ref=f1e225]:
+                    - generic [ref=f1e226]: F
+                    - generic [ref=f1e227]: Faisal
+                    - generic [ref=f1e228]: "24"
+                  - generic [ref=f1e229]: ₹99,70,488
+                - generic [ref=f1e233]:
+                  - generic [ref=f1e234]:
+                    - generic [ref=f1e235]: J
+                    - generic [ref=f1e236]: Jikky
+                    - generic [ref=f1e237]: "29"
+                  - generic [ref=f1e238]: ₹86,51,859
+                - generic [ref=f1e242]:
+                  - generic [ref=f1e243]:
+                    - generic [ref=f1e244]: A
+                    - generic [ref=f1e245]: Adarsh
+                    - generic [ref=f1e246]: "22"
+                  - generic [ref=f1e247]: ₹82,49,286
+            - generic [ref=f1e258]:
+              - heading "State Sales" [level=3] [ref=f1e259]
+              - paragraph [ref=f1e260]: Top revenue generating states
+          - generic [ref=f1e270]:
+            - heading "Regional Sales (Cities)" [level=3] [ref=f1e271]
+            - paragraph [ref=f1e272]: Top revenue generating cities
+  - button "Open Next.js Dev Tools" [ref=f1e279] [cursor=pointer]

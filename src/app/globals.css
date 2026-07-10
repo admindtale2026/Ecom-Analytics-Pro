@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+/*
+  EcomAnalytics Pro design tokens.
+  Derived from the reference dashboard: navy sidebar, indigo primary,
+  light-gray content area, white rounded cards, ₹ currency, Inter font.
+*/
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Brand / primary */
+  --color-brand-50: #eef0ff;
+  --color-brand-100: #e0e3ff;
+  --color-brand-200: #c7ccff;
+  --color-brand-300: #a5abff;
+  --color-brand-400: #8385f8;
+  --color-brand-500: #5d5fef;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+
+  /* Sidebar (deep navy) */
+  --color-sidebar: #0b1120;
+  --color-sidebar-muted: #8b95a7;
+  --color-sidebar-hover: #16203a;
+
+  /* Content surfaces */
+  --color-canvas: #f6f7f9;
+  --color-card: #ffffff;
+  --color-line: #eef0f4;
+
+  /* Text */
+  --color-ink: #0f172a;
+  /* Darkened from #64748b, which scored 4.43 on --color-canvas — under the 4.5 AA floor. */
+  --color-ink-soft: #5c6a7c;
+
+  /*
+    Chart palette: a single indigo ramp, dark→light, plus two neutrals.
+    Series are ranked (revenue desc) so the ramp reads as an ordering rather
+    than eight competing identities. Legends always accompany colour.
+  */
+  --color-chart-1: #3730a3;
+  --color-chart-2: #4f46e5;
+  --color-chart-3: #6366f1;
+  --color-chart-4: #818cf8;
+  --color-chart-5: #a5b4fc;
+  --color-chart-6: #c7d2fe;
+  --color-chart-7: #94a3b8;
+  --color-chart-8: #cbd5e1;
+
+  /* Status */
+  --color-pos: #16a34a;
+  --color-neg: #dc2626;
+  --color-warn: #d97706;
+
+  --radius-card: 1rem;
+
+  /*
+    Motion. Every duration is well inside the 500ms ceiling; the longest thing
+    on screen (--dur-slow) is a page-section entrance. Easing is a single
+    decelerating curve so movement arrives rather than stops.
+  */
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+  --ease-out: cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* Tighter base scale; every rem-sized token shrinks with it. */
+html {
+  font-size: 14px;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Thin, unobtrusive scrollbars inside scroll regions */
+.scroll-slim::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: #d7dbe3;
+  border-radius: 9999px;
+}
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Numeric tabular alignment for money columns */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- motion */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+  Page sections fade up on mount. `.anim-stack > *` staggers direct children by
+  index so a KPI row resolves left-to-right instead of all at once. The stagger
+  is capped at 6 steps; beyond that the delay would outlast the animation.
+*/
+.anim-rise {
+  animation: rise var(--dur-slow) var(--ease-out) both;
+}
+
+.anim-stack > * {
+  animation: rise var(--dur-slow) var(--ease-out) both;
+}
+.anim-stack > *:nth-child(1) { animation-delay: 0ms; }
+.anim-stack > *:nth-child(2) { animation-delay: 40ms; }
+.anim-stack > *:nth-child(3) { animation-delay: 80ms; }
+.anim-stack > *:nth-child(4) { animation-delay: 120ms; }
+.anim-stack > *:nth-child(5) { animation-delay: 160ms; }
+.anim-stack > *:nth-child(n + 6) { animation-delay: 180ms; }
+
+/* Radix overlays (dropdown, popover) share one in/out transition. */
+[data-radix-popper-content-wrapper] {
+  animation: pop var(--dur-fast) var(--ease-out);
+}
+
+/* Rows and interactive surfaces settle rather than snap. */
+.row-hover {
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

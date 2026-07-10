@@ -1,0 +1,191 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - link "EA EcomAnalytics" [ref=e5] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=e6]: EA
+          - generic [ref=e7]: EcomAnalytics
+        - navigation [ref=e8]:
+          - paragraph [ref=e9]: Main Menu
+          - link "Dashboard" [ref=e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Orders Data" [ref=e16] [cursor=pointer]:
+            - /url: /orders
+          - link "Analytics" [ref=e19] [cursor=pointer]:
+            - /url: /analytics
+          - link "Sales Team" [ref=e22] [cursor=pointer]:
+            - /url: /sales-team
+          - link "Customers" [ref=e28] [cursor=pointer]:
+            - /url: /customers
+          - link "Inventory" [ref=e31] [cursor=pointer]:
+            - /url: /inventory
+          - link "Not Processed" [ref=e36] [cursor=pointer]:
+            - /url: /not-processed
+          - link "Regions" [ref=e43] [cursor=pointer]:
+            - /url: /regions
+          - link "Ad Opportunity" [ref=e47] [cursor=pointer]:
+            - /url: /opportunity
+          - paragraph [ref=e50]: System
+          - link "Manage Users" [ref=e51] [cursor=pointer]:
+            - /url: /admin/users
+          - link "Admin Settings" [ref=e64] [cursor=pointer]:
+            - /url: /admin/settings
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - generic [ref=e70]: J
+            - generic [ref=e71]:
+              - paragraph [ref=e72]: Joju
+              - paragraph [ref=e73]: admin
+          - link "Sign Out" [ref=e74] [cursor=pointer]:
+            - /url: /api/auth/signout
+    - generic [ref=e78]:
+      - banner [ref=e79]:
+        - generic [ref=e80]:
+          - heading "Dashboard" [level=1] [ref=e82]
+          - generic [ref=e84]:
+            - button "Modern" [ref=e85]
+            - button "Sales Team" [ref=e93]
+            - button "All Time" [ref=e100]
+            - button "Export PDF" [ref=e106]
+      - main [ref=e111]:
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - heading "Business Overview" [level=2] [ref=e115]
+            - paragraph [ref=e116]:
+              - generic [ref=e117]: All Time
+              - generic [ref=e118]: modern store
+          - generic [ref=e119]:
+            - generic [ref=e120]:
+              - paragraph [ref=e125]: Gross Revenue
+              - paragraph [ref=e126]: ₹14,10,90,267
+            - generic [ref=e127]:
+              - paragraph [ref=e133]: Total Orders
+              - paragraph [ref=e134]: "373"
+            - generic [ref=e135]:
+              - paragraph [ref=e148]: Total Volume (Units)
+              - paragraph [ref=e149]: 2,270
+            - generic [ref=e150]:
+              - paragraph [ref=e155]: Avg Order Value
+              - paragraph [ref=e156]: ₹3,78,258
+          - generic [ref=e158]:
+            - generic [ref=e165]:
+              - heading "Revenue Performance" [level=3] [ref=e166]
+              - paragraph [ref=e167]: Daily revenue fluctuations over the period
+            - application [ref=e170]:
+              - generic [ref=e182]:
+                - generic [ref=e183]:
+                  - generic [ref=e184]: 06 Apr
+                  - generic [ref=e186]: 12 Apr
+                  - generic [ref=e188]: 18 Apr
+                  - generic [ref=e190]: 24 Apr
+                  - generic [ref=e192]: 30 Apr
+                  - generic [ref=e194]: 06 May
+                  - generic [ref=e196]: 12 May
+                  - generic [ref=e198]: 19 May
+                  - generic [ref=e200]: 26 May
+                  - generic [ref=e202]: 01 Jun
+                  - generic [ref=e204]: 07 Jun
+                  - generic [ref=e206]: 13 Jun
+                  - generic [ref=e208]: 19 Jun
+                  - generic [ref=e210]: 25 Jun
+                  - generic [ref=e212]: 02 Jul
+                - generic [ref=e214]:
+                  - generic [ref=e215]: ₹0
+                  - generic [ref=e217]: ₹25.00L
+                  - generic [ref=e219]: ₹50.00L
+                  - generic [ref=e221]: ₹75.00L
+                  - generic [ref=e223]: ₹1.00Cr
+          - generic [ref=e225]:
+            - generic [ref=e227]:
+              - generic [ref=e230]:
+                - heading "Salesperson Performance" [level=3] [ref=e231]
+                - paragraph [ref=e232]: Top performing sales representatives
+              - generic [ref=e233]:
+                - generic [ref=e235]:
+                  - generic [ref=e236]:
+                    - generic [ref=e237]: S
+                    - generic [ref=e238]: Shikha
+                    - generic [ref=e239]: "23"
+                  - generic [ref=e240]: ₹1,36,13,492
+                - generic [ref=e244]:
+                  - generic [ref=e245]:
+                    - generic [ref=e246]: S
+                    - generic [ref=e247]: Swetha
+                    - generic [ref=e248]: "23"
+                  - generic [ref=e249]: ₹1,35,30,014
+                - generic [ref=e253]:
+                  - generic [ref=e254]:
+                    - generic [ref=e255]: S
+                    - generic [ref=e256]: Santhosh
+                    - generic [ref=e257]: "25"
+                  - generic [ref=e258]: ₹1,22,46,805
+                - generic [ref=e262]:
+                  - generic [ref=e263]:
+                    - generic [ref=e264]: T
+                    - generic [ref=e265]: Talu
+                    - generic [ref=e266]: "31"
+                  - generic [ref=e267]: ₹1,18,41,942
+                - generic [ref=e271]:
+                  - generic [ref=e272]:
+                    - generic [ref=e273]: S
+                    - generic [ref=e274]: Sajeesh
+                    - generic [ref=e275]: "27"
+                  - generic [ref=e276]: ₹1,07,78,823
+                - generic [ref=e280]:
+                  - generic [ref=e281]:
+                    - generic [ref=e282]: F
+                    - generic [ref=e283]: Faisal
+                    - generic [ref=e284]: "24"
+                  - generic [ref=e285]: ₹99,70,488
+                - generic [ref=e289]:
+                  - generic [ref=e290]:
+                    - generic [ref=e291]: J
+                    - generic [ref=e292]: Jikky
+                    - generic [ref=e293]: "29"
+                  - generic [ref=e294]: ₹86,51,859
+                - generic [ref=e298]:
+                  - generic [ref=e299]:
+                    - generic [ref=e300]: A
+                    - generic [ref=e301]: Adarsh
+                    - generic [ref=e302]: "22"
+                  - generic [ref=e303]: ₹82,49,286
+            - generic [ref=e307]:
+              - generic [ref=e314]:
+                - heading "State Sales" [level=3] [ref=e315]
+                - paragraph [ref=e316]: Top revenue generating states
+              - application [ref=e319]:
+                - generic [ref=e323]:
+                  - generic [ref=e324]:
+                    - generic [ref=e325]: Uttar Pradesh
+                    - generic [ref=e327]: Tamil Nadu
+                    - generic [ref=e329]: Karnataka
+                    - generic [ref=e331]: Maharashtra
+                    - generic [ref=e333]: Telangana
+                  - generic [ref=e335]:
+                    - generic [ref=e336]: ₹0
+                    - generic [ref=e338]: ₹75.00L
+                    - generic [ref=e340]: ₹1.50Cr
+                    - generic [ref=e342]: ₹2.25Cr
+                    - generic [ref=e344]: ₹3.00Cr
+          - generic [ref=e347]:
+            - generic [ref=e354]:
+              - heading "Regional Sales (Cities)" [level=3] [ref=e355]
+              - paragraph [ref=e356]: Top revenue generating cities
+            - application [ref=e359]:
+              - generic [ref=e363]:
+                - generic [ref=e364]:
+                  - generic [ref=e365]: ₹0
+                  - generic [ref=e367]: ₹65.00 L
+                  - generic [ref=e369]: ₹1.30 Cr
+                  - generic [ref=e371]: ₹1.95 Cr
+                  - generic [ref=e373]: ₹2.60 Cr
+                - generic [ref=e375]:
+                  - generic [ref=e376]: Chennai
+                  - generic [ref=e378]: Bengaluru
+                  - generic [ref=e380]: Hyderabad
+                  - generic [ref=e382]: Lucknow
+                  - generic [ref=e384]: Noida
+                  - generic [ref=e386]: Mumbai
+  - alert [ref=e388]
+  - generic [ref=e389]: Chennai

@@ -1,0 +1,96 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - complementary [ref=f6e3]:
+      - generic [ref=f6e4]:
+        - link "EA EcomAnalytics" [ref=f6e5] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=f6e6]: EA
+          - generic [ref=f6e7]: EcomAnalytics
+        - navigation [ref=f6e8]:
+          - paragraph [ref=f6e9]: Main Menu
+          - link "Dashboard" [ref=f6e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Orders Data" [ref=f6e16] [cursor=pointer]:
+            - /url: /orders
+          - link "Analytics" [ref=f6e19] [cursor=pointer]:
+            - /url: /analytics
+          - link "Sales Team" [ref=f6e22] [cursor=pointer]:
+            - /url: /sales-team
+          - link "Customers" [ref=f6e28] [cursor=pointer]:
+            - /url: /customers
+          - link "Inventory" [ref=f6e31] [cursor=pointer]:
+            - /url: /inventory
+          - link "Not Processed" [ref=f6e36] [cursor=pointer]:
+            - /url: /not-processed
+          - link "Regions" [ref=f6e43] [cursor=pointer]:
+            - /url: /regions
+          - link "Ad Opportunity" [ref=f6e47] [cursor=pointer]:
+            - /url: /opportunity
+          - paragraph [ref=f6e50]: System
+          - link "Manage Users" [ref=f6e51] [cursor=pointer]:
+            - /url: /admin/users
+          - link "Admin Settings" [ref=f6e64] [cursor=pointer]:
+            - /url: /admin/settings
+        - generic [ref=f6e68]:
+          - generic [ref=f6e69]:
+            - generic [ref=f6e70]: J
+            - generic [ref=f6e71]:
+              - paragraph [ref=f6e72]: Joju
+              - paragraph [ref=f6e73]: admin
+          - button "Sign Out" [ref=f6e75]
+    - generic [ref=f6e79]:
+      - banner [ref=f6e80]:
+        - generic [ref=f6e81]:
+          - heading "Admin Settings" [level=1] [ref=f6e83]
+          - generic [ref=f6e85]:
+            - button "Modern" [ref=f6e86]
+            - button "Sales Team" [ref=f6e94]
+            - button "All Time" [ref=f6e101]
+            - button "Export PDF" [ref=f6e107]
+      - main [ref=f6e112]:
+        - generic [ref=f6e114]:
+          - generic [ref=f6e115]:
+            - generic [ref=f6e116]:
+              - heading "Admin Control Panel" [level=2] [ref=f6e117]
+              - paragraph [ref=f6e118]: Data pipeline & access management
+            - generic [ref=f6e120]:
+              - generic [ref=f6e121]:
+                - button "Delta Sync" [ref=f6e122]
+                - button "Full Sync" [ref=f6e128]
+              - button "Commit Changes" [ref=f6e133]
+          - navigation [ref=f6e138]:
+            - link "Dataset Connection" [ref=f6e139] [cursor=pointer]:
+              - /url: /admin/settings?tab=dataset
+            - link "Schema Mapping" [ref=f6e144] [cursor=pointer]:
+              - /url: /admin/settings?tab=schema
+            - link "Team Access" [ref=f6e147] [cursor=pointer]:
+              - /url: /admin/settings?tab=team
+            - link "Identity Logic" [ref=f6e153] [cursor=pointer]:
+              - /url: /admin/settings?tab=identity
+          - generic [ref=f6e164]:
+            - generic [ref=f6e165]:
+              - generic [ref=f6e166]:
+                - generic [ref=f6e167] [cursor=pointer]:
+                  - radio "Google Sheets Integration Scheduled cloud polling — delta hourly, full sync nightly." [checked] [ref=f6e168]
+                  - generic [ref=f6e173]:
+                    - generic [ref=f6e174]: Google Sheets Integration
+                    - generic [ref=f6e175]: Scheduled cloud polling — delta hourly, full sync nightly.
+                - generic [ref=f6e176] [cursor=pointer]:
+                  - radio "Native Upload Import an .xlsx / .csv workbook directly. No credentials required." [ref=f6e177]
+                  - generic [ref=f6e182]:
+                    - generic [ref=f6e183]: Native Upload
+                    - generic [ref=f6e184]: Import an .xlsx / .csv workbook directly. No credentials required.
+              - generic [ref=f6e185]:
+                - text: Live endpoint URL
+                - textbox "Live endpoint URL" [ref=f6e190]:
+                  - /placeholder: https://docs.google.com/spreadsheets/d/…
+                  - text: https://docs.google.com/spreadsheets/d/1YBezRHcgSBEF4ZpOEihIsktz3TVTgWIkGtUnoTri6J4/edit?usp=sharing
+                - paragraph [ref=f6e191]: "Last delta: 10/7/2026, 1:50:45 pm · 0 rows"
+              - button "Save connection" [ref=f6e192]
+            - generic [ref=f6e193]:
+              - paragraph [ref=f6e194]: Native upload
+              - generic [ref=f6e196] [cursor=pointer]:
+                - button "Drop an .xlsx / .csv here, or click to choose Re-uploading the same sheet updates rows in place — it never duplicates them." [ref=f6e197]
+                - generic [ref=f6e202]: Drop an .xlsx / .csv here, or click to choose
+                - generic [ref=f6e203]: Re-uploading the same sheet updates rows in place — it never duplicates them.
+  - button "Open Next.js Dev Tools" [ref=f6e209] [cursor=pointer]

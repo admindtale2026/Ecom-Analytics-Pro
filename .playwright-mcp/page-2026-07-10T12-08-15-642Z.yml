@@ -1,0 +1,199 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - complementary [ref=f4e3]:
+      - generic [ref=f4e4]:
+        - link "EA EcomAnalytics" [ref=f4e5] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=f4e6]: EA
+          - generic [ref=f4e7]: EcomAnalytics
+        - navigation [ref=f4e8]:
+          - paragraph [ref=f4e9]: Main Menu
+          - link "Dashboard" [ref=f4e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Orders Data" [ref=f4e16] [cursor=pointer]:
+            - /url: /orders
+          - link "Analytics" [ref=f4e19] [cursor=pointer]:
+            - /url: /analytics
+          - link "Sales Team" [ref=f4e22] [cursor=pointer]:
+            - /url: /sales-team
+          - link "Customers" [ref=f4e28] [cursor=pointer]:
+            - /url: /customers
+          - link "Inventory" [ref=f4e31] [cursor=pointer]:
+            - /url: /inventory
+          - link "Not Processed" [ref=f4e36] [cursor=pointer]:
+            - /url: /not-processed
+          - link "Regions" [ref=f4e43] [cursor=pointer]:
+            - /url: /regions
+          - link "Ad Opportunity" [ref=f4e47] [cursor=pointer]:
+            - /url: /opportunity
+          - paragraph [ref=f4e50]: System
+          - link "Manage Users" [ref=f4e51] [cursor=pointer]:
+            - /url: /admin/users
+          - link "Admin Settings" [ref=f4e64] [cursor=pointer]:
+            - /url: /admin/settings
+        - generic [ref=f4e68]:
+          - generic [ref=f4e69]:
+            - generic [ref=f4e70]: J
+            - generic [ref=f4e71]:
+              - paragraph [ref=f4e72]: Joju
+              - paragraph [ref=f4e73]: admin
+          - button "Sign Out" [ref=f4e75]
+    - generic [ref=f4e79]:
+      - banner [ref=f4e80]:
+        - generic [ref=f4e81]:
+          - heading "Customers" [level=1] [ref=f4e83]
+          - generic [ref=f4e85]:
+            - button "Modern" [ref=f4e86]
+            - button "Sales Team" [ref=f4e94]
+            - button "All Time" [ref=f4e101]
+            - button "Export PDF" [ref=f4e107]
+      - main [ref=f4e112]:
+        - generic [ref=f4e114]:
+          - generic [ref=f4e115]:
+            - generic [ref=f4e116]:
+              - paragraph [ref=f4e124]: Unique Customers
+              - paragraph [ref=f4e125]: "197"
+            - generic [ref=f4e126]:
+              - paragraph [ref=f4e131]: Repeat Buyers
+              - paragraph [ref=f4e132]: "96"
+            - generic [ref=f4e133]:
+              - paragraph [ref=f4e140]: Retention Rate
+              - paragraph [ref=f4e141]: 48.7%
+            - generic [ref=f4e142]:
+              - paragraph [ref=f4e147]: Avg Lifetime Value
+              - paragraph [ref=f4e148]: ₹7,16,194
+          - generic [ref=f4e149]:
+            - generic [ref=f4e151]:
+              - generic [ref=f4e158]:
+                - heading "Loyalty Segmentation" [level=3] [ref=f4e159]
+                - paragraph [ref=f4e160]: Identity matched via mobile and email
+              - list [ref=f4e164]:
+                - listitem [ref=f4e165]:
+                  - generic [ref=f4e166]: Repeat Buyers
+                  - generic [ref=f4e169]: 48.7%
+                - listitem [ref=f4e170]:
+                  - generic [ref=f4e171]: One-time Buyers
+                  - generic [ref=f4e174]: 51.3%
+            - generic [ref=f4e176]:
+              - generic [ref=f4e183]:
+                - heading "VIP Buyer Ranking" [level=3] [ref=f4e184]
+                - paragraph [ref=f4e185]: Calculated by total revenue contribution
+              - table [ref=f4e187]:
+                - rowgroup [ref=f4e188]:
+                  - row [ref=f4e189]:
+                    - columnheader "Customer" [ref=f4e190]
+                    - columnheader "Orders" [ref=f4e191]
+                    - columnheader "Contact" [ref=f4e192]
+                    - columnheader "Gross Spend" [ref=f4e193]
+                - rowgroup [ref=f4e194]:
+                  - row [ref=f4e195]:
+                    - cell "1 SpaceMatrix Roll" [ref=f4e196]:
+                      - generic [ref=f4e197]:
+                        - generic [ref=f4e198]: "1"
+                        - generic [ref=f4e199]: SpaceMatrix Roll
+                    - cell "21" [ref=f4e200]
+                    - cell "9573933287 spacematrix@gmail.com" [ref=f4e202]:
+                      - generic [ref=f4e203]:
+                        - generic [ref=f4e204]: "9573933287"
+                        - generic [ref=f4e208]: spacematrix@gmail.com
+                    - cell "₹1,90,94,962" [ref=f4e213]
+                  - row [ref=f4e214]:
+                    - cell "2 Takira Atelier" [ref=f4e215]:
+                      - generic [ref=f4e216]:
+                        - generic [ref=f4e217]: "2"
+                        - generic [ref=f4e218]: Takira Atelier
+                    - cell "8" [ref=f4e219]
+                    - cell "9324931360 takira@gmail.com" [ref=f4e221]:
+                      - generic [ref=f4e222]:
+                        - generic [ref=f4e223]: "9324931360"
+                        - generic [ref=f4e227]: takira@gmail.com
+                    - cell "₹1,40,59,451" [ref=f4e232]
+                  - row [ref=f4e233]:
+                    - cell "3 KEF Hospitality - Round Dome Furniture" [ref=f4e234]:
+                      - generic [ref=f4e235]:
+                        - generic [ref=f4e236]: "3"
+                        - generic [ref=f4e237]: KEF Hospitality - Round Dome Furniture
+                    - cell "7" [ref=f4e238]
+                    - cell "— kef@gmail.com" [ref=f4e240]:
+                      - generic [ref=f4e241]:
+                        - generic [ref=f4e242]: —
+                        - generic [ref=f4e246]: kef@gmail.com
+                    - cell "₹89,02,451" [ref=f4e251]
+                  - row [ref=f4e252]:
+                    - cell "4 PADAM INTERIORS" [ref=f4e253]:
+                      - generic [ref=f4e254]:
+                        - generic [ref=f4e255]: "4"
+                        - generic [ref=f4e256]: PADAM INTERIORS
+                    - cell "10" [ref=f4e257]
+                    - cell "— padam@gmail.com" [ref=f4e259]:
+                      - generic [ref=f4e260]:
+                        - generic [ref=f4e261]: —
+                        - generic [ref=f4e265]: padam@gmail.com
+                    - cell "₹79,38,295" [ref=f4e270]
+                  - row [ref=f4e271]:
+                    - cell "5 Studio Verde" [ref=f4e272]:
+                      - generic [ref=f4e273]:
+                        - generic [ref=f4e274]: "5"
+                        - generic [ref=f4e275]: Studio Verde
+                    - cell "7" [ref=f4e276]
+                    - cell "9550656538 studio@gmail.com" [ref=f4e278]:
+                      - generic [ref=f4e279]:
+                        - generic [ref=f4e280]: "9550656538"
+                        - generic [ref=f4e284]: studio@gmail.com
+                    - cell "₹37,58,068" [ref=f4e289]
+                  - row [ref=f4e290]:
+                    - cell "6 Bobu Iyer" [ref=f4e291]:
+                      - generic [ref=f4e292]:
+                        - generic [ref=f4e293]: "6"
+                        - generic [ref=f4e294]: Bobu Iyer
+                    - cell "4" [ref=f4e295]
+                    - cell "9574004935 bobu.iyer14@gmail.com" [ref=f4e297]:
+                      - generic [ref=f4e298]:
+                        - generic [ref=f4e299]: "9574004935"
+                        - generic [ref=f4e303]: bobu.iyer14@gmail.com
+                    - cell "₹16,15,455" [ref=f4e308]
+                  - row [ref=f4e309]:
+                    - cell "7 Rohan George" [ref=f4e310]:
+                      - generic [ref=f4e311]:
+                        - generic [ref=f4e312]: "7"
+                        - generic [ref=f4e313]: Rohan George
+                    - cell "4" [ref=f4e314]
+                    - cell "9572606411 rohan.george15@gmail.com" [ref=f4e316]:
+                      - generic [ref=f4e317]:
+                        - generic [ref=f4e318]: "9572606411"
+                        - generic [ref=f4e322]: rohan.george15@gmail.com
+                    - cell "₹16,14,222" [ref=f4e327]
+                  - row [ref=f4e328]:
+                    - cell "8 Kartick Sharma" [ref=f4e329]:
+                      - generic [ref=f4e330]:
+                        - generic [ref=f4e331]: "8"
+                        - generic [ref=f4e332]: Kartick Sharma
+                    - cell "3" [ref=f4e333]
+                    - cell "8841171100 kartick.sharma17@gmail.com" [ref=f4e335]:
+                      - generic [ref=f4e336]:
+                        - generic [ref=f4e337]: "8841171100"
+                        - generic [ref=f4e341]: kartick.sharma17@gmail.com
+                    - cell "₹16,06,114" [ref=f4e346]
+                  - row [ref=f4e347]:
+                    - cell "9 Uday Malhotra" [ref=f4e348]:
+                      - generic [ref=f4e349]:
+                        - generic [ref=f4e350]: "9"
+                        - generic [ref=f4e351]: Uday Malhotra
+                    - cell "4" [ref=f4e352]
+                    - cell "8785986556 uday.malhotra21@gmail.com" [ref=f4e354]:
+                      - generic [ref=f4e355]:
+                        - generic [ref=f4e356]: "8785986556"
+                        - generic [ref=f4e360]: uday.malhotra21@gmail.com
+                    - cell "₹14,26,247" [ref=f4e365]
+                  - row [ref=f4e366]:
+                    - cell "10 Rajeev Bakshi" [ref=f4e367]:
+                      - generic [ref=f4e368]:
+                        - generic [ref=f4e369]: "10"
+                        - generic [ref=f4e370]: Rajeev Bakshi
+                    - cell "5" [ref=f4e371]
+                    - cell "— rajeev.bakshi53@gmail.com" [ref=f4e373]:
+                      - generic [ref=f4e374]:
+                        - generic [ref=f4e375]: —
+                        - generic [ref=f4e379]: rajeev.bakshi53@gmail.com
+                    - cell "₹13,76,443" [ref=f4e384]
+  - button "Open Next.js Dev Tools" [ref=f4e390] [cursor=pointer]

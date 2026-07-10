@@ -1,0 +1,19 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: EA
+      - generic [ref=e6]: EcomAnalytics
+    - generic [ref=e7]:
+      - heading "Welcome back" [level=1] [ref=e8]
+      - paragraph [ref=e9]: Sign in to your analytics workspace.
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - text: Email
+          - textbox "you@company.com" [ref=e12]: admin@dtalemodern.com
+        - generic [ref=e13]:
+          - text: Password
+          - textbox "••••••••" [ref=e14]: password
+        - button "Sign In" [ref=e15]
+      - paragraph [ref=e19]: Demo login is pre-filled — just click Sign In.
+  - button "Open Next.js Dev Tools" [ref=e25] [cursor=pointer]
+  - alert [ref=e29]

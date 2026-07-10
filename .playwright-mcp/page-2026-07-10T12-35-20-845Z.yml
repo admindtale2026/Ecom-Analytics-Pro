@@ -1,0 +1,162 @@
+- generic [active] [ref=f27e1]:
+  - generic [ref=f27e2]:
+    - complementary [ref=f27e3]:
+      - generic [ref=f27e4]:
+        - link "EA EcomAnalytics" [ref=f27e5] [cursor=pointer]:
+          - /url: /dashboard
+          - generic [ref=f27e6]: EA
+          - generic [ref=f27e7]: EcomAnalytics
+        - navigation [ref=f27e8]:
+          - paragraph [ref=f27e9]: Main Menu
+          - link "Dashboard" [ref=f27e10] [cursor=pointer]:
+            - /url: /dashboard
+          - link "Orders Data" [ref=f27e16] [cursor=pointer]:
+            - /url: /orders
+          - link "Analytics" [ref=f27e19] [cursor=pointer]:
+            - /url: /analytics
+          - link "Sales Team" [ref=f27e22] [cursor=pointer]:
+            - /url: /sales-team
+          - link "Customers" [ref=f27e28] [cursor=pointer]:
+            - /url: /customers
+          - link "Inventory" [ref=f27e31] [cursor=pointer]:
+            - /url: /inventory
+          - link "Not Processed" [ref=f27e36] [cursor=pointer]:
+            - /url: /not-processed
+          - link "Regions" [ref=f27e43] [cursor=pointer]:
+            - /url: /regions
+          - link "Ad Opportunity" [ref=f27e47] [cursor=pointer]:
+            - /url: /opportunity
+          - paragraph [ref=f27e50]: System
+          - link "Manage Users" [ref=f27e51] [cursor=pointer]:
+            - /url: /admin/users
+          - link "Admin Settings" [ref=f27e64] [cursor=pointer]:
+            - /url: /admin/settings
+        - generic [ref=f27e68]:
+          - generic [ref=f27e69]:
+            - generic [ref=f27e70]: J
+            - generic [ref=f27e71]:
+              - paragraph [ref=f27e72]: Joju
+              - paragraph [ref=f27e73]: admin
+          - button "Sign Out" [ref=f27e75]
+    - generic [ref=f27e79]:
+      - banner [ref=f27e80]:
+        - generic [ref=f27e81]:
+          - heading "Ad Opportunity" [level=1] [ref=f27e83]
+          - generic [ref=f27e85]:
+            - button "Modern" [ref=f27e86]
+            - button "Sales Team" [ref=f27e94]
+            - button "All Time" [ref=f27e101]
+            - button "Export PDF" [ref=f27e107]
+      - main [ref=f27e112]:
+        - generic [ref=f27e114]:
+          - generic [ref=f27e115]:
+            - heading "Ad Spend Opportunity" [level=2] [ref=f27e116]
+            - paragraph [ref=f27e121]:
+              - text: Cities are split against the
+              - strong [ref=f27e122]: median
+              - text: city — not the mean, which a couple of runaway metros would drag upward.
+          - generic [ref=f27e123]:
+            - generic [ref=f27e124]:
+              - paragraph [ref=f27e125]: Active Cities
+              - paragraph [ref=f27e126]: "26"
+            - generic [ref=f27e127]:
+              - paragraph [ref=f27e128]: Median Orders / City
+              - paragraph [ref=f27e129]: "8"
+            - generic [ref=f27e130]:
+              - paragraph [ref=f27e131]: Median Basket
+              - paragraph [ref=f27e132]: ₹2,66,974
+            - generic [ref=f27e133]:
+              - paragraph [ref=f27e134]: Scale Candidates
+              - paragraph [ref=f27e135]: "6"
+          - generic [ref=f27e137]:
+            - generic [ref=f27e144]:
+              - heading "Where to spend next" [level=3] [ref=f27e145]
+              - paragraph [ref=f27e146]: High basket value, below-median order volume — ranked by revenue headroom
+            - list [ref=f27e147]:
+              - listitem [ref=f27e148]:
+                - generic [ref=f27e149]:
+                  - generic [ref=f27e150]:
+                    - generic [ref=f27e151]:
+                      - generic [ref=f27e152]: Patna
+                      - generic [ref=f27e153]: Bihar
+                    - generic [ref=f27e154]: "1"
+                  - paragraph [ref=f27e155]: +₹26,26,630
+                  - paragraph [ref=f27e156]: Est. headroom
+                  - generic [ref=f27e157]:
+                    - generic [ref=f27e158]:
+                      - term [ref=f27e159]: Basket
+                      - definition [ref=f27e160]: ₹4,77,569
+                    - generic [ref=f27e161]:
+                      - term [ref=f27e162]: Orders
+                      - definition [ref=f27e163]: 2 vs 8 median
+                  - link "Inspect Patna →" [ref=f27e164] [cursor=pointer]:
+                    - /url: /regions/city/Patna?store=modern
+              - listitem [ref=f27e165]:
+                - generic [ref=f27e166]:
+                  - generic [ref=f27e167]:
+                    - generic [ref=f27e168]:
+                      - generic [ref=f27e169]: Delhi
+                      - generic [ref=f27e170]: Delhi
+                    - generic [ref=f27e171]: "2"
+                  - paragraph [ref=f27e172]: +₹8,67,784
+                  - paragraph [ref=f27e173]: Est. headroom
+                  - generic [ref=f27e174]:
+                    - generic [ref=f27e175]:
+                      - term [ref=f27e176]: Basket
+                      - definition [ref=f27e177]: ₹3,47,113
+                    - generic [ref=f27e178]:
+                      - term [ref=f27e179]: Orders
+                      - definition [ref=f27e180]: 5 vs 8 median
+                  - link "Inspect Delhi →" [ref=f27e181] [cursor=pointer]:
+                    - /url: /regions/city/Delhi?store=modern
+              - listitem [ref=f27e182]:
+                - generic [ref=f27e183]:
+                  - generic [ref=f27e184]:
+                    - generic [ref=f27e185]:
+                      - generic [ref=f27e186]: Nagpur
+                      - generic [ref=f27e187]: Maharashtra
+                    - generic [ref=f27e188]: "3"
+                  - paragraph [ref=f27e189]: +₹6,47,525
+                  - paragraph [ref=f27e190]: Est. headroom
+                  - generic [ref=f27e191]:
+                    - generic [ref=f27e192]:
+                      - term [ref=f27e193]: Basket
+                      - definition [ref=f27e194]: ₹4,31,683
+                    - generic [ref=f27e195]:
+                      - term [ref=f27e196]: Orders
+                      - definition [ref=f27e197]: 6 vs 8 median
+                  - link "Inspect Nagpur →" [ref=f27e198] [cursor=pointer]:
+                    - /url: /regions/city/Nagpur?store=modern
+          - generic [ref=f27e199]:
+            - generic [ref=f27e201]:
+              - generic [ref=f27e207]:
+                - heading "Revenue Map" [level=3] [ref=f27e208]
+                - paragraph [ref=f27e209]: States shaded by revenue; bubbles sized by city revenue, coloured by quadrant
+              - generic "Loading map" [ref=f27e210]
+            - generic [ref=f27e219]:
+              - heading "Opportunity Matrix" [level=3] [ref=f27e220]
+              - paragraph [ref=f27e221]: Order volume against average basket value
+          - generic [ref=f27e224]:
+            - heading "What the quadrants mean" [level=3] [ref=f27e232]
+            - generic [ref=f27e233]:
+              - generic [ref=f27e236]:
+                - term [ref=f27e237]:
+                  - text: Scale spend
+                  - generic [ref=f27e238]: 6 cities
+                - definition [ref=f27e239]: High basket value, low order count — the clearest headroom for ad spend.
+              - generic [ref=f27e242]:
+                - term [ref=f27e243]:
+                  - text: Defend
+                  - generic [ref=f27e244]: 7 cities
+                - definition [ref=f27e245]: High value and high volume. Already working; protect the position.
+              - generic [ref=f27e248]:
+                - term [ref=f27e249]:
+                  - text: Hold
+                  - generic [ref=f27e250]: 6 cities
+                - definition [ref=f27e251]: High volume but thin baskets. Grow basket size before buying more traffic.
+              - generic [ref=f27e254]:
+                - term [ref=f27e255]:
+                  - text: Nurture
+                  - generic [ref=f27e256]: 7 cities
+                - definition [ref=f27e257]: Low value, low volume. Test small before committing budget.
+  - button "Open Next.js Dev Tools" [ref=f27e263] [cursor=pointer]
