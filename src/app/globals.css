@@ -155,9 +155,51 @@ body {
 .anim-stack > *:nth-child(5) { animation-delay: 160ms; }
 .anim-stack > *:nth-child(n + 6) { animation-delay: 180ms; }
 
-/* Radix overlays (dropdown, popover) share one in/out transition. */
+/*
+  Radix overlays (dropdown, popover). The popper *wrapper* carries Radix's
+  positioning transform (translate x/y), so we must never animate `transform`
+  on it — a CSS keyframe would override that inline transform and paint the
+  content at the top-left corner for a frame before it snaps into place. Fade
+  the wrapper (opacity only) and scale-in the inner content instead, anchored
+  to the popper's own transform origin.
+*/
 [data-radix-popper-content-wrapper] {
-  animation: pop var(--dur-fast) var(--ease-out);
+  animation: fade var(--dur-fast) var(--ease-out);
+}
+
+.overlay-pop {
+  animation: pop-scale var(--dur-fast) var(--ease-out);
+  transform-origin: var(--radix-popper-transform-origin);
+}
+
+@keyframes pop-scale {
+  from {
+    transform: scale(0.97);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A slim brand bar sweeps left-to-right on store switch, then fades. */
+@keyframes sweep {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+  75% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+.store-sweep {
+  transform-origin: left center;
+  animation: sweep var(--dur-slow) var(--ease-out) both;
 }
 
 /* Rows and interactive surfaces settle rather than snap. */

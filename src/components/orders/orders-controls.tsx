@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Wifi, WifiOff, RefreshCw, Download, User, MapPin, CircleDot, Rows3, Loader2 } from "lucide-react";
+import { Search, RefreshCw, Download, User, MapPin, CircleDot, Rows3, Loader2 } from "lucide-react";
 import { usePatchParams } from "@/hooks/use-patch-params";
+import { useApplyFilters } from "@/hooks/use-apply-filters";
 import { ORDER_STATUSES } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 
 function Select({
   label,
@@ -44,15 +44,16 @@ function Select({
 export function OrdersControls({
   states,
   people,
-  syncConfigured,
+  salesperson,
 }: {
   states: string[];
   people: string[];
-  /** Whether a Google Sheet is actually wired up; drives the live-sync badge. */
-  syncConfigured: boolean;
+  /** The active global salesperson filter (single value shown here; cleared = "All"). */
+  salesperson: string;
 }) {
   const sp = useSearchParams();
   const patch = usePatchParams();
+  const applyFilters = useApplyFilters();
   const router = useRouter();
   const [q, setQ] = useState(sp.get("q") ?? "");
   const [syncing, setSyncing] = useState(false);
@@ -93,26 +94,11 @@ export function OrdersControls({
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by ID, Invoice, Customer or Mobile…"
+            placeholder="Search by ID, Invoice, Customer, Mobile, Product or SKU…"
             className="w-full rounded-xl border border-line bg-card py-3 pl-11 pr-4 text-sm shadow-sm outline-none focus:border-brand-400"
           />
         </form>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Claiming "live sync" when no sheet is connected would be a lie. */}
-          <span
-            className={cn(
-              "inline-flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-bold uppercase tracking-wide",
-              syncConfigured ? "bg-brand-50 text-brand-600" : "bg-slate-100 text-ink-soft",
-            )}
-            title={
-              syncConfigured
-                ? "A Google Sheet is connected; delta sync runs hourly."
-                : "No Google Sheet connected — data comes from uploads."
-            }
-          >
-            {syncConfigured ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
-            {syncConfigured ? "Live Sync Active" : "Upload Mode"}
-          </span>
           <button
             type="button"
             onClick={refreshFeed}
@@ -143,9 +129,9 @@ export function OrdersControls({
         <Select
           label="Sales Person"
           icon={<User className="h-3.5 w-3.5" />}
-          value={sp.get("sp") ?? ""}
+          value={salesperson}
           options={[{ value: "", label: "All" }, ...people.map((p) => ({ value: p, label: p }))]}
-          onChange={(v) => patch({ sp: v || null }, { resetPage: true })}
+          onChange={(v) => applyFilters({ sp: v || null })}
         />
         <Select
           label="State"

@@ -106,9 +106,25 @@ function parseNumber(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-function parseDate(v: unknown): Date | null {
+/** Excel serial-date epoch is 1899-12-30 (accounts for the 1900 leap-year bug). */
+const EXCEL_EPOCH_MS = Date.UTC(1899, 11, 30);
+
+/**
+ * Parse a date cell defensively, regardless of what the reader hands us:
+ *  - a JS Date (upload path, or CSV read with `cellDates:true`) → pass through;
+ *  - a finite number = an Excel serial date → convert via the Excel epoch,
+ *    NOT `new Date(n)` (which would read it as ms-since-1970 → year 1970);
+ *  - anything else → `new Date(String(v))`.
+ */
+export function parseDate(v: unknown): Date | null {
   if (v == null || v === "") return null;
-  const d = new Date(v as string);
+  if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
+  if (typeof v === "number") {
+    if (!Number.isFinite(v)) return null;
+    const d = new Date(EXCEL_EPOCH_MS + v * 86400000);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  const d = new Date(String(v));
   return Number.isNaN(d.getTime()) ? null : d;
 }
 

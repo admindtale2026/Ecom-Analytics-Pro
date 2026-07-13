@@ -16,7 +16,15 @@ const TOOLTIP: Record<Mode, string> = {
  * Delta / Full sync triggers. They POST to the very same `/api/sync` route the
  * Vercel cron calls, so a manual sync and a scheduled one cannot drift.
  */
-export function SyncButtons({ store, showCommit }: { store: string; showCommit: boolean }) {
+export function SyncButtons({
+  store,
+  showCommit,
+  showSaveConnection = false,
+}: {
+  store: string;
+  showCommit: boolean;
+  showSaveConnection?: boolean;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [busy, setBusy] = useState<Mode | null>(null);
@@ -78,6 +86,17 @@ export function SyncButtons({ store, showCommit }: { store: string; showCommit: 
           >
             <Save className="h-4 w-4" />
             Commit Changes
+          </button>
+        ) : null}
+        {/* Submits the Dataset Connection form by id — only rendered on that tab. */}
+        {showSaveConnection ? (
+          <button
+            form="dataset-connection-form"
+            type="submit"
+            className="inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-slate-800"
+          >
+            <Save className="h-4 w-4" />
+            Save connection
           </button>
         ) : null}
       </div>

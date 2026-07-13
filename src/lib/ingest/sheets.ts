@@ -51,7 +51,11 @@ async function fetchTabRows(
     );
   }
   const text = await res.text();
-  const wb = XLSX.read(text, { type: "string", raw: false });
+  // `cellDates:true` mirrors the known-good upload path (`workbook.ts`) so
+  // datetime cells arrive as JS Dates. WITHOUT it, SheetJS returns them as
+  // Excel serial numbers (e.g. 45748.01) which downstream `new Date(n)` would
+  // misread as milliseconds-since-1970, collapsing every synced order to 1970.
+  const wb = XLSX.read(text, { type: "string", raw: false, cellDates: true });
   const first = wb.SheetNames[0];
   if (!first) return [];
   return XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[first], { defval: null });

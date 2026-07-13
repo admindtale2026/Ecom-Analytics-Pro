@@ -3,11 +3,12 @@ import { Card, CardBody } from "@/components/ui/card";
 import { OrdersControls } from "@/components/orders/orders-controls";
 import { Pagination } from "@/components/ui/pagination";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { parseFilters, type SearchParams } from "@/lib/filters";
+import { ProductThumb } from "@/components/ui/product-thumb";
+import { type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { getOrders, getOrderStates } from "@/server/orders";
 import { getSalespeople } from "@/server/common";
-import { getStoreSheet } from "@/lib/ingest/sheet-manifest";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function OrdersPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const f = parseFilters(sp);
+  const f = await getFilters();
   const page = Number(one(sp.page) ?? 1);
   const pageSize = Number(one(sp.rows) ?? 25);
   const query = {
@@ -35,11 +36,8 @@ export default async function OrdersPage({
   const [{ rows, total }, states, people] = await Promise.all([
     getOrders(f, query),
     getOrderStates(f),
-    getSalespeople(),
+    getSalespeople(f.storeId),
   ]);
-
-  // "Live" means this store has sheet grids mapped in the manifest, which it does.
-  const syncConfigured = Boolean(getStoreSheet(f.storeId));
 
   return (
     <div className="space-y-5">
@@ -47,7 +45,11 @@ export default async function OrdersPage({
 
       <Card>
         <CardBody>
-          <OrdersControls states={states} people={people} syncConfigured={syncConfigured} />
+          <OrdersControls
+            states={states}
+            people={people}
+            salesperson={f.salespeople.length === 1 ? f.salespeople[0] : ""}
+          />
         </CardBody>
       </Card>
 
@@ -79,8 +81,21 @@ export default async function OrdersPage({
               {rows.map((o) => (
                 <tr key={o.orderId} className="border-b border-line/70 last:border-0 hover:bg-slate-50/60">
                   <td className="px-5 py-4">
-                    <Link href={`/orders/${encodeURIComponent(o.orderId)}`} className="font-semibold text-brand-600 hover:underline">
-                      {o.orderId}
+                    <Link
+                      href={`/orders/${encodeURIComponent(o.orderId)}`}
+                      className="flex items-center gap-3"
+                    >
+                      <ProductThumb imageUrl={o.imageUrl} name={o.productName} size={40} />
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-brand-600 hover:underline">
+                          {o.orderId}
+                        </span>
+                        {o.productName ? (
+                          <span className="block max-w-[180px] truncate text-xs text-ink-soft">
+                            {o.productName}
+                          </span>
+                        ) : null}
+                      </span>
                     </Link>
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap text-ink-soft">

@@ -29,8 +29,8 @@ function endOfDay(d: Date) {
 
 /**
  * Resolve a date preset into a concrete [from,to]. "Now" is intentionally
- * read from the server clock. Default (no param) = All Time so seeded/real
- * data is always visible on first load.
+ * read from the server clock. Default (no param) = This Month, so first load
+ * shows the current period. "All Time" is an explicit choice (`range=all`).
  */
 function resolveRange(
   preset: string | undefined,
@@ -62,8 +62,11 @@ function resolveRange(
         d ? d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : "…";
       return { from, to, label: `${fmt(from)} – ${fmt(to)}`, presetId: "custom" };
     }
-    default:
+    case "all":
       return { from: null, to: null, label: "All Time", presetId: "all" };
+    default:
+      // No cookie / unknown preset → default the dashboard to This Month.
+      return resolveRange("thisMonth", fromStr, toStr);
   }
 }
 
@@ -77,17 +80,4 @@ export function parseFilters(sp: SearchParams): Filters {
   const { from, to, label, presetId } = resolveRange(one(sp.range), one(sp.from), one(sp.to));
 
   return { storeId, salespeople, from, to, rangeLabel: label, presetId };
-}
-
-/** Serialize filters back to a query string (used when navigating). */
-export function filtersToQuery(f: Partial<Filters> & { storeId: StoreId }): string {
-  const p = new URLSearchParams();
-  p.set("store", f.storeId);
-  if (f.salespeople && f.salespeople.length) p.set("sp", f.salespeople.join(","));
-  if (f.presetId && f.presetId !== "all") p.set("range", f.presetId);
-  if (f.presetId === "custom") {
-    if (f.from) p.set("from", f.from.toISOString().slice(0, 10));
-    if (f.to) p.set("to", f.to.toISOString().slice(0, 10));
-  }
-  return p.toString();
 }

@@ -7,7 +7,8 @@ import { DetailHeader } from "@/components/ui/page-header";
 import { ProductThumb } from "@/components/ui/product-thumb";
 import { RevenueLine } from "@/components/charts/revenue-line";
 import { HBar } from "@/components/charts/bar-chart";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { type SearchParams  } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { cn, formatCurrency, formatNumber, formatPercent, initials } from "@/lib/utils";
 import {
   getProductCities,
@@ -72,7 +73,7 @@ export default async function ProductPage({
   const { product: raw } = await params;
   const name = decodeURIComponent(raw);
   const sp = await searchParams;
-  const f = parseFilters(sp);
+  const f = await getFilters();
 
   const windowParam = one(sp.window);
   const win: WindowId = WINDOWS.some((w) => w.id === windowParam)
@@ -90,12 +91,10 @@ export default async function ProductPage({
     getProductMonthly(f, name, win),
   ]);
 
-  const query = filtersToQuery(f);
-
   return (
     <div className="space-y-6 anim-rise">
       <DetailHeader
-        backHref={`/inventory?${query}`}
+        backHref={`/inventory`}
         title={detail.name}
         subtitle={detail.sku ? `SKU: ${detail.sku}` : undefined}
         action={
@@ -112,7 +111,7 @@ export default async function ProductPage({
       </div>
 
       <div className="anim-stack grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <KpiCard label="Revenue" value={formatCurrency(detail.revenue)} icon={<DollarSign className="h-5 w-5" />} />
+        <KpiCard label="Revenue" value={formatCurrency(detail.revenue)} icon={<DollarSign className="h-5 w-5" />} money />
         <KpiCard label="Units Sold" value={formatNumber(detail.units)} icon={<Boxes className="h-5 w-5" />} />
         <KpiCard label="Avg Order Value" value={formatCurrency(detail.aov)} icon={<TrendingUp className="h-5 w-5" />} />
         <KpiCard label="Orders" value={formatNumber(detail.orders)} icon={<ShoppingBag className="h-5 w-5" />} />
@@ -170,7 +169,7 @@ export default async function ProductPage({
                     </span>
                   </span>
                   <span className="shrink-0 text-right">
-                    <span className="block text-sm font-bold text-ink tnum">{formatCurrency(r.revenue)}</span>
+                    <span className="block text-sm font-bold text-pos tnum">{formatCurrency(r.revenue)}</span>
                     <span className="block text-xs text-ink-soft tnum">{formatNumber(r.units)} units</span>
                   </span>
                 </li>
@@ -192,7 +191,7 @@ export default async function ProductPage({
                   {WINDOWS.map((w) => (
                     <Link
                       key={w.id}
-                      href={`/inventory/${encodeURIComponent(name)}?${query}&window=${w.id}`}
+                      href={`/inventory/${encodeURIComponent(name)}?window=${w.id}`}
                       scroll={false}
                       className={cn(
                         "rounded-lg px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-colors duration-150",

@@ -1,13 +1,50 @@
 # PROGRESS — read this first when resuming
 
-**Last updated:** 2026-07-11 — **M0–M5 complete and gated.** Lighthouse + exhaustive visual diff done; first
-commit **pushed to GitHub** (`admindtale2026/Ecom-Analytics-Pro`, `main` @ `ec07a83`). Only two items remain,
-both **intentionally deferred** (external dependencies, not blockers): the Neon `DATABASE_URL` cutover, and the
-delta-sync-twice test against a real Google sheet.
+**Last updated:** 2026-07-13 — **M0–M6 complete, gated, and browser-verified.** M6 (data-date fix, default
+filter This Month + **smart fallback to latest month with data**, security hardening) is done and driven in a
+real browser. **Neon adopted and loaded**: `DATABASE_URL` (direct endpoint) is live in `.env.local`, migrated +
+seeded + full-synced — Neon holds **6,382 order_lines spanning 2025-03-31 → 2026-06-30** (users 4, order_summary
+2,018, city_geo 117). Login, per-store clamp, and the anonymous access gate all verified against Neon. Gate green
+(`tsc`/`eslint`/`build`, `ƒ Proxy (Middleware)`). Remaining deferred: delta-sync-twice on a real sheet (idempotency
+already re-proven — a second `npm run db:sync` left counts at 6,382); set the Neon **pooler** string + prod
+`AUTH_SECRET`/`CRON_SECRET` in Vercel at deploy.
 
 > Dev server runs on **port 3100** in this project (`npm run dev -- --port 3100`), not 3000.
 > Check `lsof -nP -iTCP:3100 -sTCP:LISTEN` before starting another.
-> Login: `admin@dtalemodern.com` / `password` (all seeded demo users share it).
+> Login: demo credential pre-fill was **removed** (security). Seed no longer hardcodes a password —
+> `npm run db:seed` prints a random one (or set `SEED_ADMIN_PASSWORD`). Seeded admin email: `admin@dtalemodern.com`.
+
+## M6 — Data-date fix, default filter & security hardening (2026-07-12)
+
+- **Fixed the "no data before April 2026" bug.** The Sheet CSV sync was reading datetime cells as **Excel
+  serial numbers** and `new Date(serial)` read them as ms-since-1970, so every synced order collapsed to
+  1970-01-01 (the upload path was always fine). Fix: `src/lib/ingest/sheets.ts` reads with `cellDates:true`,
+  and `parseDate` (`mapping.ts`, now exported and reused by `pipeline.ts`'s `toDate`) handles Date/serial/string.
+  The only correctly-dated rows before this were the **synthetic seed** orders, hardcoded to Apr–Jul 2026.
+- **Seed is reference-only now.** `src/db/seed.ts` stops generating synthetic orders; it seeds users/geo/
+  data_sources/schema_mappings/settings and clears order tables (so a re-seed also drops stale/1970 rows).
+  **Real order history comes from a sheet sync**, not the seed. → Run a **full** sync to populate.
+- **Default date filter is This Month, with a smart fallback.** `resolveRange` (`src/lib/filters.ts`) defaults to
+  `thisMonth`; "All Time" is an explicit `range=all` choice. Because the sample sheet's latest order is 2026-06-30
+  (today is 2026-07-13), a strict This Month loads empty, so `getFilters` (`src/lib/filters-server.ts`) now falls
+  back to the **most recent month that has orders** (label e.g. "Jun 2026") when — and only when — no range was
+  explicitly chosen and This Month is empty. The date button shows the server-resolved `rangeLabel`.
+  The filter cookie key was bumped `ea_filters` → **`ea_filters_v2`** so a stale `range=all` cookie is retired.
+- **Security tightened (verified).** Route guard is `src/proxy.ts` (Next 16 renamed `middleware`→`proxy`; build
+  lists `ƒ Proxy (Middleware)`), matcher guards all pages and excludes `/api/*` (they self-auth, incl. the cron
+  bearer). Layout-level redirect for the anonymous guest, no login-page demo pre-fill, no committed
+  passwords/secrets (seed prints/uses `SEED_ADMIN_PASSWORD`), session `maxAge` 12h, no self-registration.
+  **New in this pass, all browser-verified against Neon:**
+  - **Backdoor closed.** `getCurrentUser()` (`src/lib/session.ts`) no longer returns a `DEMO_ADMIN` outside
+    production — it fails closed to `ANONYMOUS` everywhere. Verified: unauth `/api/sync`→401, `/api/upload`→403,
+    `/api/export/orders`→401, pages→`/login`.
+  - **Per-store access enforced.** `assertStoreAccess`/`canAccessStore` (`session.ts`); `getFilters` clamps an
+    out-of-scope `store` to the caller's first allowed store; the store switcher (`filter-bar.tsx`) only lists
+    allowed stores. Verified: decor-scoped "Lijith" with a forged `store=modern` cookie stays on Decor.
+  - **New members require explicit store scope** — `addTeamMember` (`admin-actions.ts`) + a store-checkbox group
+    on the add-member form; admins implicitly get all stores.
+  - **Prod refuses to boot without a strong `AUTH_SECRET`** (`src/auth.ts`); `/api/sync` warns if `CRON_SECRET`
+    is unset in prod.
 
 ## Resume here
 
@@ -48,16 +85,18 @@ This file is the single source of truth for "where did we stop and what's next".
 | Color | Minimal. Single indigo ramp + neutrals. Do **not** reintroduce the reference app's rainbow palette |
 | Animation | Butter-smooth, **nothing over 500ms**. Tokens: `--dur-fast: 120ms`, `--dur-base: 180ms`, `--dur-slow: 280ms` |
 
-### Database: PGlite now, Neon at the end (by decision — not a blocker)
+### Database: Neon adopted (2026-07-13)
 
-We are intentionally running on the **local PGlite fallback** (`.pglite/`) for the remainder
-of the build; it works fine and needs no credentials. **Neon is the chosen managed Postgres,
-to be wired up at the finish line** — not because it's blocked, but because nothing else
-depends on it and the client is env-driven. `src/db/client.ts` is already driver-agnostic, so
-adopting Neon is zero code change: set `DATABASE_URL` in `.env.local` (pooled string for the
-app; migrate/seed against the direct string) and run
-`npm run db:generate && npm run db:migrate && npm run db:seed && npm run db:seed-geo`, then
-restart `next dev`. Full step-by-step in `~/.claude/plans/magical-hopping-wall.md`.
+**Now on Neon.** `DATABASE_URL` is set in `.env.local` to the Neon **direct** endpoint
+(`ep-restless-hat-…neon.tech`), which works for both the app (client uses `max:1, prepare:false`)
+and migrations/seeds. `src/db/client.ts` auto-selects postgres-js when `DATABASE_URL` is present,
+so this was zero code change. Load sequence used:
+`db:migrate && db:seed && db:seed-geo && db:sync` (the new `db:sync` = `scripts/sync-all-once.ts`,
+which preloads `.env.local` via `scripts/_load-env.ts` **before** importing the DB client — required
+because the client reads `DATABASE_URL` eagerly at import). PGlite remains the automatic local
+fallback when `DATABASE_URL` is unset. **For Vercel:** use Neon's **pooler** string for `DATABASE_URL`
+and keep the direct string for migrate/seed; set prod `AUTH_SECRET`/`CRON_SECRET`. Runbook:
+`~/.claude/plans/magical-hopping-wall.md`.
 
 ---
 

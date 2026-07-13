@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { AdminPanel, ADMIN_TABS, type AdminTab } from "@/components/admin/admin-panel";
-import { parseFilters, type SearchParams } from "@/lib/filters";
+import { type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { getCurrentUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export default async function AdminSettingsPage({
   if (user.role !== "admin") notFound();
 
   const sp = await searchParams;
-  const f = parseFilters(sp);
+  const f = await getFilters();
   const tabParam = one(sp.tab);
   const tab: AdminTab = ADMIN_TABS.some((t) => t.id === tabParam)
     ? (tabParam as AdminTab)

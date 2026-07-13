@@ -5,7 +5,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/ui/kpi-card";
 import { DetailHeader } from "@/components/ui/page-header";
 import { Donut } from "@/components/charts/donut";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, initials } from "@/lib/utils";
 import {
   getCitiesInState,
@@ -19,14 +19,12 @@ export const dynamic = "force-dynamic";
 
 export default async function StatePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ state: string }>;
-  searchParams: Promise<SearchParams>;
 }) {
   const { state: raw } = await params;
   const state = decodeURIComponent(raw);
-  const f = parseFilters(await searchParams);
+  const f = await getFilters();
 
   const [detail, cities, reps, typeMix, products] = await Promise.all([
     getStateDetail(f, state),
@@ -38,12 +36,10 @@ export default async function StatePage({
 
   if (!detail.orders) notFound();
 
-  const query = filtersToQuery(f);
-
   return (
     <div className="space-y-6 anim-rise">
       <DetailHeader
-        backHref={`/regions?${query}`}
+        backHref={`/regions`}
         title={state}
         subtitle="State comprehensive analytics and market share"
         icon={<Globe className="h-3.5 w-3.5" />}
@@ -51,7 +47,7 @@ export default async function StatePage({
       />
 
       <div className="anim-stack grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <StatTile label="State Revenue" value={formatCurrency(detail.revenue)} accent />
+        <StatTile label="State Revenue" value={formatCurrency(detail.revenue)} money />
         <StatTile label="Total Orders" value={formatNumber(detail.orders)} sub={`${formatNumber(detail.units)} units sold`} />
         <StatTile label="Avg Order Value" value={formatCurrency(detail.aov)} />
         <StatTile label="Unique Customers" value={formatNumber(detail.uniqueCustomers)} />
@@ -65,7 +61,7 @@ export default async function StatePage({
               {cities.map((c, i) => (
                 <li key={c.name}>
                   <Link
-                    href={`/regions/city/${encodeURIComponent(c.name)}?${query}`}
+                    href={`/regions/city/${encodeURIComponent(c.name)}`}
                     className="row-hover flex items-center justify-between gap-3 rounded-xl border border-line px-3 py-2.5 hover:bg-slate-50"
                   >
                     <span className="flex min-w-0 items-center gap-2.5">
@@ -77,7 +73,7 @@ export default async function StatePage({
                         <span className="block text-xs text-ink-soft tnum">{formatNumber(c.orders)} orders</span>
                       </span>
                     </span>
-                    <span className="shrink-0 text-sm font-bold text-ink tnum">{formatCurrency(c.revenue)}</span>
+                    <span className="shrink-0 text-sm font-bold text-pos tnum">{formatCurrency(c.revenue)}</span>
                   </Link>
                 </li>
               ))}
@@ -147,7 +143,7 @@ export default async function StatePage({
                             {i + 1}
                           </span>
                           <Link
-                            href={`/inventory/${encodeURIComponent(p.name)}?${query}`}
+                            href={`/inventory/${encodeURIComponent(p.name)}`}
                             className="truncate font-semibold text-ink hover:text-brand-600"
                           >
                             {p.name}
@@ -160,7 +156,7 @@ export default async function StatePage({
                         </span>
                       </td>
                       <td className="px-5 py-3 text-right text-ink tnum">{formatNumber(p.units)}</td>
-                      <td className="px-5 py-3 text-right font-bold text-ink tnum">{formatCurrency(p.revenue)}</td>
+                      <td className="px-5 py-3 text-right font-bold text-pos tnum">{formatCurrency(p.revenue)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -171,7 +167,7 @@ export default async function StatePage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatTile label="Revenue" value={formatCurrency(detail.revenue)} sub="Across all cities" />
+        <StatTile label="Revenue" value={formatCurrency(detail.revenue)} sub="Across all cities" money />
         <StatTile label="Orders" value={formatNumber(detail.orders)} sub={`${cities.length} cities active`} />
         <StatTile label="Reps Active" value={formatNumber(reps.length)} sub="Selling into this state" />
       </div>

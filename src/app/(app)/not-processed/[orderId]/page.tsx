@@ -3,7 +3,7 @@ import { AlertCircle, Calendar, User, CreditCard } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { DetailHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency } from "@/lib/utils";
 import { getBacklogOrder } from "@/server/not-processed";
 
@@ -22,24 +22,20 @@ function Field({ label, value, accent }: { label: string; value: string; accent?
 
 export default async function BacklogOrderPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ orderId: string }>;
-  searchParams: Promise<SearchParams>;
 }) {
   const { orderId: raw } = await params;
   const orderId = decodeURIComponent(raw);
-  const f = parseFilters(await searchParams);
+  const f = await getFilters();
 
   const order = await getBacklogOrder(f.storeId, orderId);
   if (!order) notFound();
 
-  const query = filtersToQuery(f);
-
   return (
     <div className="space-y-6 anim-rise">
       <DetailHeader
-        backHref={`/not-processed?${query}`}
+        backHref={`/not-processed`}
         title={`Order ${order.orderId}`}
         subtitle={[order.orderDate, order.salesPerson, formatCurrency(order.paymentAmount)]
           .filter(Boolean)

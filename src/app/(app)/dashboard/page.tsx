@@ -3,7 +3,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { RevenueLine } from "@/components/charts/revenue-line";
 import { VBar, HBar } from "@/components/charts/bar-chart";
-import { parseFilters, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, initials, safeDivide } from "@/lib/utils";
 import {
   getKpis,
@@ -15,12 +15,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const f = parseFilters(await searchParams);
+export default async function DashboardPage() {
+  const f = await getFilters();
   const [kpis, daily, sales, states, cities] = await Promise.all([
     getKpis(f),
     getDailyRevenue(f),
@@ -49,6 +45,7 @@ export default async function DashboardPage({
           value={formatCurrency(kpis.revenue)}
           icon={<DollarSign className="h-5 w-5" />}
           delta={kpis.revenueDelta}
+          money
         />
         <KpiCard
           label="Total Orders"
@@ -98,7 +95,7 @@ export default async function DashboardPage({
                         {formatNumber(s.orders)}
                       </span>
                     </span>
-                    <span className="font-bold text-ink tnum">{formatCurrency(s.revenue)}</span>
+                    <span className="font-bold text-pos tnum">{formatCurrency(s.revenue)}</span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                     <div

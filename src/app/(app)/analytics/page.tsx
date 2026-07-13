@@ -1,11 +1,11 @@
-import Link from "next/link";
 import { Activity, Layers, MapPin } from "lucide-react";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/ui/kpi-card";
 import { MiniBar } from "@/components/ui/page-header";
 import { RevenueVolumeChart } from "@/components/charts/combo-chart";
 import { HBar } from "@/components/charts/bar-chart";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import {
   getAnalyticsHeadline,
@@ -16,12 +16,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function AnalyticsPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const f = parseFilters(await searchParams);
+export default async function AnalyticsPage() {
+  const f = await getFilters();
   const [headline, trajectory, matrix] = await Promise.all([
     getAnalyticsHeadline(f),
     getTrajectory(f),
@@ -29,7 +25,6 @@ export default async function AnalyticsPage({
   ]);
   const leadingType = headline.leadingType ?? matrix[0]?.productType ?? null;
   const cities = leadingType ? await getCitiesForType(f, leadingType) : [];
-  const query = filtersToQuery(f);
   const maxAov = Math.max(1, ...matrix.map((m) => m.aov));
 
   return (
@@ -103,17 +98,15 @@ export default async function AnalyticsPage({
                 </tr>
               )}
               {matrix.map((row) => (
-                <tr
+                <ClickableRow
                   key={row.productType}
-                  className="row-hover border-b border-line/70 last:border-0 hover:bg-brand-50/40"
+                  href={`/analytics/${encodeURIComponent(row.productType)}`}
+                  className="group row-hover border-b border-line/70 last:border-0 hover:bg-brand-50/40"
                 >
                   <td className="px-5 py-3.5">
-                    <Link
-                      href={`/analytics/${encodeURIComponent(row.productType)}?${query}`}
-                      className="font-semibold text-ink transition-colors duration-150 hover:text-brand-600"
-                    >
+                    <span className="font-semibold text-ink transition-colors duration-150 group-hover:text-brand-600">
                       {row.productType}
-                    </Link>
+                    </span>
                   </td>
                   <td className="px-5 py-3.5 text-right font-semibold text-ink tnum">
                     {formatPercent(row.share)}
@@ -128,10 +121,10 @@ export default async function AnalyticsPage({
                     <p className="text-ink tnum">{formatCurrency(row.aov)}</p>
                     <MiniBar value={row.aov} max={maxAov} className="mt-1.5" />
                   </td>
-                  <td className="px-5 py-3.5 text-right font-bold text-ink tnum">
+                  <td className="px-5 py-3.5 text-right font-bold text-pos tnum">
                     {formatCurrency(row.revenue)}
                   </td>
-                </tr>
+                </ClickableRow>
               ))}
             </tbody>
           </table>

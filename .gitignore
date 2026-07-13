@@ -36,6 +36,10 @@ yarn-error.log*
 # local embedded postgres (dev)
 /.pglite
 
+# browser-automation / verification scratch artifacts
+/.playwright-mcp/
+/dashboard-smart-default.png
+
 # vercel
 .vercel
 

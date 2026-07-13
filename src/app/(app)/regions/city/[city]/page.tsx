@@ -7,7 +7,7 @@ import { DetailHeader } from "@/components/ui/page-header";
 import { Donut } from "@/components/charts/donut";
 import { RevenueLine } from "@/components/charts/revenue-line";
 import { HBar } from "@/components/charts/bar-chart";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import { UNATTRIBUTED } from "@/server/base";
 import {
@@ -24,14 +24,12 @@ export const dynamic = "force-dynamic";
 
 export default async function CityPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ city: string }>;
-  searchParams: Promise<SearchParams>;
 }) {
   const { city: raw } = await params;
   const city = decodeURIComponent(raw);
-  const f = parseFilters(await searchParams);
+  const f = await getFilters();
 
   const [detail, reps, typeMix, products, trend, insight, allCities] = await Promise.all([
     getCityDetail(f, city),
@@ -44,8 +42,6 @@ export default async function CityPage({
   ]);
 
   if (!detail.orders) notFound();
-
-  const query = filtersToQuery(f);
   const state = allCities.find((c) => c.name === city)?.state ?? "Unknown";
 
   /*
@@ -58,7 +54,7 @@ export default async function CityPage({
   return (
     <div className="space-y-6 anim-rise">
       <DetailHeader
-        backHref={`/regions?${query}`}
+        backHref={`/regions`}
         eyebrow={state}
         icon={<MapPin className="h-3.5 w-3.5" />}
         title={city}
@@ -66,7 +62,7 @@ export default async function CityPage({
       />
 
       <div className="anim-stack grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <StatTile label="Total Revenue" value={formatCurrency(detail.revenue)} accent />
+        <StatTile label="Total Revenue" value={formatCurrency(detail.revenue)} money />
         <StatTile label="Total Orders" value={formatNumber(detail.orders)} />
         <StatTile label="Units Sold" value={formatNumber(detail.units)} />
         <StatTile label="Avg Order Value" value={formatCurrency(detail.aov)} />
@@ -93,7 +89,7 @@ export default async function CityPage({
                     <tr key={p.name} className="row-hover border-b border-line last:border-0 hover:bg-slate-50">
                       <td className="px-5 py-3 sm:px-6">
                         <Link
-                          href={`/inventory/${encodeURIComponent(p.name)}?${query}`}
+                          href={`/inventory/${encodeURIComponent(p.name)}`}
                           className="font-semibold text-ink hover:text-brand-600"
                         >
                           {p.name}
@@ -101,7 +97,7 @@ export default async function CityPage({
                       </td>
                       <td className="px-5 py-3 text-right text-ink tnum">{formatNumber(p.orders)}</td>
                       <td className="px-5 py-3 text-right text-ink tnum">{formatNumber(p.units)}</td>
-                      <td className="px-5 py-3 text-right font-bold text-ink tnum">{formatCurrency(p.revenue)}</td>
+                      <td className="px-5 py-3 text-right font-bold text-pos tnum">{formatCurrency(p.revenue)}</td>
                     </tr>
                   ))}
                 </tbody>
