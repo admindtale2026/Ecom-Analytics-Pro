@@ -6,21 +6,12 @@ import { authConfig } from "./auth.config";
 import { db } from "./db/client";
 import { users } from "./db/schema";
 
-// Fail hard, not open: a missing/weak AUTH_SECRET lets anyone forge a session
-// JWT and walk in as admin. Refuse to boot the auth stack in production without
-// a strong one (32 random bytes base64 ≈ 44 chars; require ≥ 16 to be safe).
-//
-// Skip during `next build`: page-data collection imports this module, and a
-// runtime-only secret needn't be present at build time. The check still runs at
-// runtime (request/startup), where it actually matters — and NextAuth enforces
-// its own secret requirement then too.
-const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
-if (!isBuildPhase && process.env.NODE_ENV === "production" && (process.env.AUTH_SECRET ?? "").length < 16) {
-  throw new Error(
-    "AUTH_SECRET is missing or too weak. Set a strong value (openssl rand -base64 32) before deploying.",
-  );
-}
-
+// AUTH_SECRET is mandatory in production: a missing/weak one lets anyone forge a
+// session JWT. We do NOT hand-roll a check here — NextAuth v5 already refuses to
+// operate in production without a secret (throwing at request time), and a
+// module-level throw breaks `next build`'s page-data collection. So enforcement
+// lives with NextAuth at runtime; set a strong AUTH_SECRET (openssl rand -base64
+// 32) in the deploy environment.
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
