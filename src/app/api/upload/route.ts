@@ -1,5 +1,6 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { STORES, type StoreId } from "@/lib/constants";
+import { dataTag } from "@/server/cache-tags";
 import { getCurrentUser } from "@/lib/session";
 import { resolveMapping } from "@/server/admin";
 import { parseWorkbook } from "@/lib/ingest/workbook";
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
     : null;
 
   // Every page reads this store's data; blow the whole cache for it.
+  revalidateTag(dataTag(storeId), "max");
   revalidatePath("/", "layout");
 
   return Response.json({ store: storeId, batchId, lines, summary });

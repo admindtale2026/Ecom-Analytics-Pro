@@ -1,10 +1,12 @@
 import { cookies } from "next/headers";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { orderLines } from "@/db/schema";
 import { parseFilters, type Filters } from "./filters";
 import { STORES, type StoreId } from "./constants";
+import { dataTag } from "@/server/cache-tags";
 import { getCurrentUser, canAccessStore } from "./session";
 
 /**
@@ -85,9 +87,26 @@ async function applyLatestMonthFallback(filters: Filters): Promise<void> {
 
 /** Most recent order_date for a store, or null when the store has no orders. */
 async function latestOrderDate(storeId: StoreId): Promise<Date | null> {
-  const [row] = await db
-    .select({ d: sql<string | null>`max(${orderLines.orderDate})` })
-    .from(orderLines)
-    .where(eq(orderLines.storeId, storeId));
-  return row?.d ? new Date(row.d) : null;
+  const iso = await cachedLatestOrderIso(storeId);
+  return iso ? new Date(iso) : null;
+}
+
+/**
+ * The latest order date only changes when a sync runs, so cache it across
+ * requests (tagged per store, invalidated by /api/sync). Without this, the
+ * smart-fallback added a live `max(order_date)` round-trip to every page load.
+ * Returns an ISO string (unstable_cache serializes its result).
+ */
+function cachedLatestOrderIso(storeId: StoreId): Promise<string | null> {
+  return unstable_cache(
+    async () => {
+      const [row] = await db
+        .select({ d: sql<string | null>`max(${orderLines.orderDate})` })
+        .from(orderLines)
+        .where(eq(orderLines.storeId, storeId));
+      return row?.d ?? null;
+    },
+    ["latest-order-iso", storeId],
+    { tags: [dataTag(storeId)], revalidate: 300 },
+  )();
 }
