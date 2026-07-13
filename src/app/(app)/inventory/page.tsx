@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card, CardBody } from "@/components/ui/card";
 import { ProductThumb } from "@/components/ui/product-thumb";
 import { ClickableRow } from "@/components/ui/clickable-row";
@@ -63,9 +64,13 @@ export default async function InventoryPage({
                       <span className="flex items-center gap-3">
                         <ProductThumb imageUrl={p.imageUrl} name={p.name} size={44} />
                         <span className="min-w-0">
-                          <span className="block truncate font-semibold text-ink group-hover:text-brand-600">
+                          {/* Real anchor so the name navigates even pre-hydration. */}
+                          <Link
+                            href={`/inventory/${encodeURIComponent(p.name)}`}
+                            className="block truncate font-semibold text-ink group-hover:text-brand-600"
+                          >
                             {p.name}
-                          </span>
+                          </Link>
                         </span>
                       </span>
                     </td>
