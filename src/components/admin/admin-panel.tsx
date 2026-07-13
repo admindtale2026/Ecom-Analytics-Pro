@@ -4,19 +4,17 @@ import {
   Table2,
   Users,
   Fingerprint,
-  Link2,
-  FileSpreadsheet,
-  HardDriveUpload,
   Trash2,
   Info,
   UserCheck,
 } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { SyncButtons } from "./sync-buttons";
-import { UploadForm } from "./upload-form";
+import { DatasetConnectionForm } from "./dataset-connection-form";
 import { AddMemberForm } from "./add-member-form";
+import { ResetPasswordControl } from "./reset-password-control";
 import { CANONICAL_FIELDS } from "@/lib/ingest/mapping";
-import { deleteTeamMember, saveSchemaMapping, setDataSource, setIdentityMode } from "@/lib/admin-actions";
+import { deleteTeamMember, saveSchemaMapping, setIdentityMode } from "@/lib/admin-actions";
 import { getDataSource, getTeam, resolveMapping } from "@/server/admin";
 import { getIdentityMode, type IdentityMode } from "@/server/customers";
 import type { StoreId } from "@/lib/constants";
@@ -52,7 +50,7 @@ export async function AdminPanel({
     getIdentityMode(),
   ]);
 
-  const kind = source?.kind ?? "sheets";
+  const kind: "sheets" | "upload" = source?.kind === "upload" ? "upload" : "sheets";
 
   return (
     <div className="space-y-6 anim-rise">
@@ -64,7 +62,11 @@ export async function AdminPanel({
           </p>
         </div>
         {tab === "team" || tab === "identity" ? null : (
-          <SyncButtons store={storeId} showCommit={tab === "schema"} />
+          <SyncButtons
+            store={storeId}
+            showCommit={tab === "schema"}
+            showSaveConnection={tab === "dataset"}
+          />
         )}
       </div>
 
@@ -94,86 +96,19 @@ export async function AdminPanel({
 
       {tab === "dataset" && (
         <Card>
-          <CardBody className="space-y-6">
-            <form action={setDataSource} className="space-y-6">
-              <input type="hidden" name="store" value={storeId} />
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <label
-                  className={cn(
-                    "flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-5 transition-colors duration-150",
-                    kind === "sheets" ? "border-brand-400 bg-brand-50/40" : "border-line hover:border-brand-200",
-                  )}
-                >
-                  <input type="radio" name="kind" value="sheets" defaultChecked={kind === "sheets"} className="sr-only" />
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white">
-                    <FileSpreadsheet className="h-5 w-5" />
-                  </span>
-                  <span>
-                    <span className="block font-bold text-ink">Google Sheets Integration</span>
-                    <span className="block text-sm text-ink-soft">
-                      Scheduled cloud polling — delta hourly, full sync nightly.
-                    </span>
-                  </span>
-                </label>
-
-                <label
-                  className={cn(
-                    "flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-5 transition-colors duration-150",
-                    kind === "upload" ? "border-brand-400 bg-brand-50/40" : "border-line hover:border-brand-200",
-                  )}
-                >
-                  <input type="radio" name="kind" value="upload" defaultChecked={kind === "upload"} className="sr-only" />
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-ink-soft">
-                    <HardDriveUpload className="h-5 w-5" />
-                  </span>
-                  <span>
-                    <span className="block font-bold text-ink">Native Upload</span>
-                    <span className="block text-sm text-ink-soft">
-                      Import an .xlsx / .csv workbook directly. No credentials required.
-                    </span>
-                  </span>
-                </label>
-              </div>
-
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="endpointUrl"
-                  className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft"
-                >
-                  Live endpoint URL
-                </label>
-                <div className="flex items-center gap-2 rounded-xl border border-line bg-slate-50/60 px-3.5 py-3">
-                  <Link2 className="h-4 w-4 shrink-0 text-ink-soft" />
-                  <input
-                    id="endpointUrl"
-                    name="endpointUrl"
-                    defaultValue={source?.endpointUrl ?? ""}
-                    placeholder="https://docs.google.com/spreadsheets/d/…"
-                    className="w-full bg-transparent text-sm text-ink outline-none"
-                  />
-                </div>
-                {source?.lastSyncedAt ? (
-                  <p className="text-xs text-ink-soft">
-                    Last {source.lastSyncMode ?? "sync"}:{" "}
-                    {new Date(source.lastSyncedAt).toLocaleString("en-IN")} · {source.rowCount} rows
-                  </p>
-                ) : null}
-              </div>
-
-              <button
-                type="submit"
-                className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-slate-800"
-              >
-                Save connection
-              </button>
-            </form>
-
-            <div className="border-t border-line pt-6">
-              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-soft">
-                Native upload
-              </p>
-              <UploadForm store={storeId} />
-            </div>
+          <CardBody>
+            <DatasetConnectionForm
+              storeId={storeId}
+              kind={kind}
+              endpointUrl={source?.endpointUrl ?? ""}
+              lastSyncedLabel={
+                source?.lastSyncedAt
+                  ? `Last ${source.lastSyncMode ?? "sync"}: ${new Date(
+                      source.lastSyncedAt,
+                    ).toLocaleString("en-IN")} · ${source.rowCount} rows`
+                  : null
+              }
+            />
           </CardBody>
         </Card>
       )}
@@ -267,16 +202,19 @@ export async function AdminPanel({
                           </span>
                         </td>
                         <td className="px-5 py-3.5 text-right">
-                          <form action={deleteTeamMember} className="inline">
-                            <input type="hidden" name="id" value={m.id} />
-                            <button
-                              type="submit"
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-semibold text-neg transition-colors duration-150 hover:bg-rose-50"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              Delete
-                            </button>
-                          </form>
+                          <div className="flex items-start justify-end gap-2">
+                            <ResetPasswordControl userId={m.id} userName={m.name} />
+                            <form action={deleteTeamMember} className="inline">
+                              <input type="hidden" name="id" value={m.id} />
+                              <button
+                                type="submit"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-semibold text-neg transition-colors duration-150 hover:bg-rose-50"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Delete
+                              </button>
+                            </form>
+                          </div>
                         </td>
                       </tr>
                     ))}

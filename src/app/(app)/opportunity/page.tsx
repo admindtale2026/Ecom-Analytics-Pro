@@ -5,7 +5,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/ui/kpi-card";
 import { OpportunityScatter } from "@/components/charts/opportunity-scatter";
 import { MapCard, MapCardSkeleton } from "@/components/charts/map-card";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import {
   QUADRANT_BLURBS,
@@ -20,15 +20,10 @@ export const dynamic = "force-dynamic";
 
 const QUADRANT_ORDER: Quadrant[] = ["scale", "defend", "hold", "nurture"];
 
-export default async function OpportunityPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const f = parseFilters(await searchParams);
+export default async function OpportunityPage() {
+  const f = await getFilters();
   const { cities, medianOrders, medianAov } = await getOpportunityCities(f);
   const recommended = recommendCities(cities, medianOrders);
-  const query = filtersToQuery(f);
 
   const counts = Object.fromEntries(
     QUADRANT_ORDER.map((q) => [q, cities.filter((c) => c.quadrant === q).length]),
@@ -98,7 +93,7 @@ export default async function OpportunityPage({
                       </div>
                     </dl>
                     <Link
-                      href={`/regions/city/${encodeURIComponent(c.city)}?${query}`}
+                      href={`/regions/city/${encodeURIComponent(c.city)}`}
                       className="mt-4 inline-flex text-xs font-semibold text-brand-600 hover:underline"
                     >
                       Inspect {c.city} →

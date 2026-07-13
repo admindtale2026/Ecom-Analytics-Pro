@@ -2,18 +2,14 @@ import { Users, HeartHandshake, History, CreditCard, UserPlus, Crown, Phone, Mai
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Donut } from "@/components/charts/donut";
-import { parseFilters, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import { getCustomers, getIdentityMode, summarizeCustomers } from "@/server/customers";
 
 export const dynamic = "force-dynamic";
 
-export default async function CustomersPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const f = parseFilters(await searchParams);
+export default async function CustomersPage() {
+  const f = await getFilters();
   const mode = await getIdentityMode();
   const rows = await getCustomers(f, mode);
   const stats = summarizeCustomers(rows);

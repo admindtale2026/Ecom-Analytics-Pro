@@ -6,28 +6,38 @@ import { Menu, X } from "lucide-react";
 import { SidebarContent } from "./sidebar";
 import { FilterBar } from "./filter-bar";
 import { NAV_ITEMS } from "@/lib/constants";
+import type { Filters } from "@/lib/filters";
 import { cn } from "@/lib/utils";
+
+const EXTRA_TITLES: Record<string, string> = { "/account": "Account" };
 
 function titleFor(pathname: string): string {
   const match = NAV_ITEMS.filter((i) => pathname.startsWith(i.href)).sort(
     (a, b) => b.href.length - a.href.length,
   )[0];
-  return match?.label ?? "Dashboard";
+  if (match) return match.label;
+  const extra = Object.keys(EXTRA_TITLES).find((href) => pathname.startsWith(href));
+  return extra ? EXTRA_TITLES[extra] : "Dashboard";
 }
 
 export function AppShell({
   role,
   userName,
   people,
+  filters,
+  allowedStores,
   children,
 }: {
   role: "admin" | "sales";
   userName: string;
   people: string[];
+  filters: Filters;
+  allowedStores: string[];
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const store = filters.storeId;
   const title = titleFor(pathname);
 
   return (
@@ -55,7 +65,12 @@ export function AppShell({
       )}
 
       {/* Main column */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        {/* Slim brand bar that sweeps across on each store switch. */}
+        <div
+          key={store}
+          className="store-sweep pointer-events-none absolute inset-x-0 top-0 z-40 h-0.5 bg-brand-500"
+        />
         <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 px-4 py-3 backdrop-blur sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
@@ -71,17 +86,19 @@ export function AppShell({
               </h1>
             </div>
             <div className="hidden md:block">
-              <FilterBar people={people} />
+              <FilterBar people={people} filters={filters} allowedStores={allowedStores} />
             </div>
           </div>
           {/* Filters wrap below on small screens */}
           <div className="mt-3 md:hidden">
-            <FilterBar people={people} />
+            <FilterBar people={people} filters={filters} allowedStores={allowedStores} />
           </div>
         </header>
 
         <main className={cn("flex-1 overflow-y-auto scroll-slim")}>
-          <div id="page-content" className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
+          {/* Keyed on the active store so the page's entrance animation replays
+              when you switch stores — a clean fade/rise, no added latency. */}
+          <div key={store} id="page-content" className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
             {children}
           </div>
         </main>

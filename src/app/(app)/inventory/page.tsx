@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { Card, CardBody } from "@/components/ui/card";
 import { ProductThumb } from "@/components/ui/product-thumb";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import { MiniBar } from "@/components/ui/page-header";
 import { ProductControls } from "@/components/inventory/product-controls";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { type SearchParams  } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { getProductCategories, getProducts } from "@/server/inventory";
 
@@ -19,7 +20,7 @@ export default async function InventoryPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const f = parseFilters(sp);
+  const f = await getFilters();
   const q = one(sp.q);
   const category = one(sp.category);
 
@@ -27,8 +28,6 @@ export default async function InventoryPage({
     getProducts(f, { q, category }),
     getProductCategories(f),
   ]);
-
-  const query = filtersToQuery(f);
   const maxUnits = Math.max(1, ...products.map((p) => p.units));
 
   return (
@@ -55,16 +54,20 @@ export default async function InventoryPage({
               </thead>
               <tbody>
                 {products.map((p) => (
-                  <tr key={p.name} className="row-hover border-b border-line last:border-0 hover:bg-slate-50">
+                  <ClickableRow
+                    key={p.name}
+                    href={`/inventory/${encodeURIComponent(p.name)}`}
+                    className="group row-hover border-b border-line last:border-0 hover:bg-slate-50"
+                  >
                     <td className="px-5 py-4 sm:px-6">
-                      <Link href={`/inventory/${encodeURIComponent(p.name)}?${query}`} className="flex items-center gap-3">
+                      <span className="flex items-center gap-3">
                         <ProductThumb imageUrl={p.imageUrl} name={p.name} size={44} />
                         <span className="min-w-0">
-                          <span className="block truncate font-semibold text-ink hover:text-brand-600">
+                          <span className="block truncate font-semibold text-ink group-hover:text-brand-600">
                             {p.name}
                           </span>
                         </span>
-                      </Link>
+                      </span>
                     </td>
                     <td className="px-5 py-4">
                       {p.category ? (
@@ -86,12 +89,12 @@ export default async function InventoryPage({
                       <MiniBar value={p.units} max={maxUnits} />
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <span className="block font-bold text-ink tnum">{formatCurrency(p.revenue)}</span>
+                      <span className="block font-bold text-pos tnum">{formatCurrency(p.revenue)}</span>
                       <span className="block text-[11px] text-ink-soft tnum">
                         avg. {formatCurrency(p.avgPrice)}
                       </span>
                     </td>
-                  </tr>
+                  </ClickableRow>
                 ))}
                 {!products.length && (
                   <tr>

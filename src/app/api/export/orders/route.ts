@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
-import { parseFilters, type SearchParams } from "@/lib/filters";
+import { type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { getCurrentUser } from "@/lib/session";
 import { getOrders } from "@/server/orders";
 
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const sp: SearchParams = Object.fromEntries(url.searchParams.entries());
-  const f = parseFilters(sp);
+  const f = await getFilters();
 
   const { rows } = await getOrders(f, {
     q: one(sp.q),

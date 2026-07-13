@@ -19,11 +19,16 @@ async function requireAdmin() {
 
 const storeId = z.enum(STORES.map((s) => s.id) as [string, ...string[]]);
 
+const ALL_STORE_IDS = STORES.map((s) => s.id);
+
 const newMember = z.object({
   name: z.string().trim().min(1, "Name is required."),
   email: z.string().trim().toLowerCase().email("Enter a valid email."),
   password: z.string().min(8, "Password must be at least 8 characters."),
   role: z.enum(["admin", "sales"]),
+  // Stores this member may access. Admins implicitly get every store, so this
+  // only constrains `sales`. Reject unknown ids outright.
+  stores: z.array(storeId).default([]),
 });
 
 export type ActionState = { error?: string; ok?: string };
@@ -38,10 +43,19 @@ export async function addTeamMember(
     email: formData.get("email"),
     password: formData.get("password"),
     role: formData.get("role"),
+    stores: formData.getAll("stores"),
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const { name, email, password, role } = parsed.data;
+  const { name, email, password, role, stores } = parsed.data;
+
+  // Admins see all stores; sales are scoped to their explicit selection and
+  // must have at least one — no silent all-store default.
+  const storeAccess = role === "admin" ? ALL_STORE_IDS : [...new Set(stores)];
+  if (role === "sales" && !storeAccess.length) {
+    return { error: "Select at least one store for a sales member." };
+  }
+
   const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, email));
   if (existing) return { error: "That email already has an account." };
 
@@ -49,10 +63,40 @@ export async function addTeamMember(
     name,
     email,
     role,
+    storeAccess: storeAccess.join(","),
     passwordHash: await bcrypt.hash(password, 10),
   });
   revalidatePath("/admin/users");
   return { ok: `${name} can now sign in.` };
+}
+
+const resetPassword = z.object({
+  id: z.coerce.number().int().positive(),
+  newPassword: z.string().min(8, "Password must be at least 8 characters."),
+});
+
+/** Admin resets another team member's password to a value they set. */
+export async function resetTeamMemberPassword(
+  _prev: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdmin();
+  const parsed = resetPassword.safeParse({
+    id: formData.get("id"),
+    newPassword: formData.get("newPassword"),
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const { id, newPassword } = parsed.data;
+  const [target] = await db.select({ name: users.name }).from(users).where(eq(users.id, id));
+  if (!target) return { error: "That account no longer exists." };
+
+  await db
+    .update(users)
+    .set({ passwordHash: await bcrypt.hash(newPassword, 10) })
+    .where(eq(users.id, id));
+  revalidatePath("/admin/users");
+  return { ok: `Password reset for ${target.name}.` };
 }
 
 export async function deleteTeamMember(formData: FormData): Promise<void> {
@@ -107,14 +151,17 @@ export async function saveSchemaMapping(formData: FormData): Promise<void> {
   revalidatePath("/admin/users");
 }
 
-export async function setDataSource(formData: FormData): Promise<void> {
+export async function setDataSource(
+  _prev: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
   await requireAdmin();
   const store = storeId.parse(formData.get("store"));
   const kind = z.enum(["sheets", "upload"]).parse(formData.get("kind"));
   const endpointUrl = String(formData.get("endpointUrl") ?? "").trim() || null;
 
   if (kind === "sheets" && endpointUrl && !/^https:\/\/docs\.google\.com\//.test(endpointUrl)) {
-    throw new Error("Sheets endpoint must be a docs.google.com URL.");
+    return { error: "Sheets endpoint must be a docs.google.com URL." };
   }
 
   // data_sources has no unique index on store_id, so upsert by hand.
@@ -128,4 +175,5 @@ export async function setDataSource(formData: FormData): Promise<void> {
     await db.insert(dataSources).values({ storeId: store, kind, endpointUrl });
   }
   revalidatePath("/admin/settings");
+  return { ok: "Connection saved." };
 }

@@ -4,7 +4,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/ui/kpi-card";
 import { DetailHeader } from "@/components/ui/page-header";
 import { ProductThumb } from "@/components/ui/product-thumb";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import { getTopProductsForType, getTypeDetail } from "@/server/analytics";
 
@@ -12,14 +12,12 @@ export const dynamic = "force-dynamic";
 
 export default async function ProductTypePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ type: string }>;
-  searchParams: Promise<SearchParams>;
 }) {
   const { type: rawType } = await params;
   const type = decodeURIComponent(rawType);
-  const f = parseFilters(await searchParams);
+  const f = await getFilters();
 
   const [detail, products] = await Promise.all([
     getTypeDetail(f, type),
@@ -30,13 +28,13 @@ export default async function ProductTypePage({
   return (
     <div className="space-y-6 anim-rise">
       <DetailHeader
-        backHref={`/analytics?${filtersToQuery(f)}`}
+        backHref={`/analytics`}
         title={type}
         subtitle="Performance Insights & Product Breakdown"
       />
 
       <div className="anim-stack grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-        <StatTile label="Total Sale Value" value={formatCurrency(detail.revenue)} accent />
+        <StatTile label="Total Sale Value" value={formatCurrency(detail.revenue)} money />
         <StatTile label="Revenue Share" value={formatPercent(detail.share)} />
         <StatTile label="Avg Order Value" value={formatCurrency(detail.aov)} />
         <StatTile
@@ -98,7 +96,7 @@ export default async function ProductTypePage({
                   <td className="px-5 py-3 text-right text-ink-soft tnum">
                     {formatCurrency(p.aov)}
                   </td>
-                  <td className="px-5 py-3 text-right font-bold text-brand-600 tnum">
+                  <td className="px-5 py-3 text-right font-bold text-pos tnum">
                     {formatCurrency(p.revenue)}
                   </td>
                 </tr>

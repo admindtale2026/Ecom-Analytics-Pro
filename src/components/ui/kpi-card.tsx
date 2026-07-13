@@ -12,12 +12,15 @@ export function KpiCard({
   icon,
   delta,
   sub,
+  money,
 }: {
   label: string;
   value: string;
   icon: React.ReactNode;
   delta?: number | null;
   sub?: string;
+  /** Render the value in the positive/green money tone (revenue figures). */
+  money?: boolean;
 }) {
   const up = (delta ?? 0) >= 0;
   return (
@@ -39,7 +42,9 @@ export function KpiCard({
         ) : null}
       </div>
       <p className="mt-4 text-sm font-medium text-ink-soft">{label}</p>
-      <p className="mt-1 text-2xl font-bold tracking-tight text-ink tnum">{value}</p>
+      <p className={cn("mt-1 text-2xl font-bold tracking-tight tnum", money ? "text-pos" : "text-ink")}>
+        {value}
+      </p>
       {sub ? <p className="mt-0.5 text-xs text-ink-soft">{sub}</p> : null}
     </Card>
   );
@@ -54,11 +59,14 @@ export function StatTile({
   value,
   sub,
   accent,
+  money,
 }: {
   label: string;
   value: string;
   sub?: string;
   accent?: boolean;
+  /** Render the value in the positive/green money tone (revenue figures). */
+  money?: boolean;
 }) {
   return (
     <Card className="p-4">
@@ -66,7 +74,7 @@ export function StatTile({
       <p
         className={cn(
           "mt-1.5 text-xl font-bold tracking-tight tnum",
-          accent ? "text-brand-600" : "text-ink",
+          money ? "text-pos" : accent ? "text-brand-600" : "text-ink",
         )}
       >
         {value}

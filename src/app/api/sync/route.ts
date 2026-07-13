@@ -30,6 +30,12 @@ export type SyncMode = "delta" | "full";
  */
 async function authorize(request: Request): Promise<boolean> {
   const secret = process.env.CRON_SECRET;
+  // Without a CRON_SECRET the scheduled (session-less) cron can't authenticate,
+  // so nightly/hourly syncs silently stop. Surface it rather than fail open —
+  // the admin path below still requires a real admin, so this is never a hole.
+  if (process.env.NODE_ENV === "production" && !secret) {
+    console.warn("CRON_SECRET is unset — scheduled /api/sync calls will be rejected.");
+  }
   const header = request.headers.get("authorization");
   if (secret && header === `Bearer ${secret}`) return true;
   const user = await getCurrentUser();
@@ -78,7 +84,7 @@ async function handle(request: Request) {
     return Response.json(
       {
         error: "Google Sheets sync is not configured.",
-        hint: "Set GOOGLE_SERVICE_ACCOUNT_JSON and share the sheet with that service account. Until then, use Admin › Dataset Connection › Native Upload.",
+        hint: "Populate SHEET_ID and STORE_SHEETS in src/lib/ingest/sheet-manifest.ts (the sheet is read over its public CSV export). Until then, use Admin › Dataset Connection › Native Upload.",
       },
       { status: 503 },
     );

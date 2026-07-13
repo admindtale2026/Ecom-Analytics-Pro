@@ -6,25 +6,19 @@ import { KpiCard } from "@/components/ui/kpi-card";
 import { MiniBar } from "@/components/ui/page-header";
 import { VBar, HBar } from "@/components/charts/bar-chart";
 import { MapCard, MapCardSkeleton } from "@/components/charts/map-card";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { getCities, getRegionHeadline, getStates } from "@/server/regions";
 
 export const dynamic = "force-dynamic";
 
-export default async function RegionsPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const f = parseFilters(await searchParams);
+export default async function RegionsPage() {
+  const f = await getFilters();
   const [headline, states, cities] = await Promise.all([
     getRegionHeadline(f),
     getStates(f),
     getCities(f),
   ]);
-
-  const query = filtersToQuery(f);
   const maxStateRev = Math.max(1, ...states.map((s) => s.revenue));
 
   return (
@@ -90,7 +84,7 @@ export default async function RegionsPage({
                 {states.map((s) => (
                   <tr key={s.name} className="row-hover border-b border-line last:border-0 hover:bg-slate-50">
                     <td className="px-5 py-3.5 sm:px-6">
-                      <Link href={`/regions/${encodeURIComponent(s.name)}?${query}`} className="flex items-center gap-2.5">
+                      <Link href={`/regions/${encodeURIComponent(s.name)}`} className="flex items-center gap-2.5">
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500">
                           <Globe className="h-4 w-4" />
                         </span>
@@ -101,7 +95,7 @@ export default async function RegionsPage({
                     <td className="px-5 py-3.5 text-right text-ink tnum">{formatNumber(s.units)}</td>
                     <td className="px-5 py-3.5 text-right text-ink-soft tnum">{formatCurrency(s.aov)}</td>
                     <td className="w-56 px-5 py-3.5 text-right">
-                      <span className="mb-1.5 block font-bold text-ink tnum">{formatCurrency(s.revenue)}</span>
+                      <span className="mb-1.5 block font-bold text-pos tnum">{formatCurrency(s.revenue)}</span>
                       <MiniBar value={s.revenue} max={maxStateRev} />
                     </td>
                   </tr>
@@ -139,7 +133,7 @@ export default async function RegionsPage({
                 {cities.slice(0, 40).map((c) => (
                   <tr key={`${c.name}-${c.state}`} className="row-hover border-b border-line last:border-0 hover:bg-slate-50">
                     <td className="px-5 py-3.5 sm:px-6">
-                      <Link href={`/regions/city/${encodeURIComponent(c.name)}?${query}`} className="flex items-center gap-2.5">
+                      <Link href={`/regions/city/${encodeURIComponent(c.name)}`} className="flex items-center gap-2.5">
                         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500">
                           <MapPin className="h-4 w-4" />
                         </span>
@@ -154,7 +148,7 @@ export default async function RegionsPage({
                     <td className="px-5 py-3.5 text-right text-ink tnum">{formatNumber(c.orders)}</td>
                     <td className="px-5 py-3.5 text-right text-ink tnum">{formatNumber(c.units)}</td>
                     <td className="px-5 py-3.5 text-right text-ink-soft tnum">{formatCurrency(c.aov)}</td>
-                    <td className="px-5 py-3.5 text-right font-bold text-ink tnum">{formatCurrency(c.revenue)}</td>
+                    <td className="px-5 py-3.5 text-right font-bold text-pos tnum">{formatCurrency(c.revenue)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -35,11 +35,15 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Admin Settings", href: "/admin/settings", icon: Settings, group: "system", adminOnly: true },
 ];
 
-/** Store tenants (from the "Select Store" dropdown in the reference app). */
+/**
+ * Store tenants (from the "Select Store" dropdown in the reference app).
+ * `color` gives each store its own accent chip in the switcher — used as an
+ * inline style so Tailwind's static scan isn't required.
+ */
 export const STORES = [
-  { id: "modern", name: "Modern" },
-  { id: "homes", name: "Homes" },
-  { id: "decor", name: "Decor" },
+  { id: "modern", name: "Modern", color: "#5d5fef" },
+  { id: "homes", name: "Homes", color: "#0ea5e9" },
+  { id: "decor", name: "Decor", color: "#f59e0b" },
 ] as const;
 export type StoreId = (typeof STORES)[number]["id"];
 

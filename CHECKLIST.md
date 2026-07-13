@@ -155,3 +155,40 @@ See `PROGRESS.md` for where work stopped. See `plan.md` for the architecture.
       finish line; see the Hosting/Database rows in `PROGRESS.md` + `~/.claude/plans/magical-hopping-wall.md`).
 - [ ] End-to-end delta-sync-twice against a **real Google sheet** — *deferred*: needs `GOOGLE_SERVICE_ACCOUNT_JSON`
       (the underlying upsert idempotency is already covered by the M1 synthetic-sheet test).
+
+## M6 — Data-date fix, default filter & security hardening (2026-07-12)
+
+### Sheet-sync date corruption (root cause of "no data before Apr 2026")
+- [x] **Bug:** CSV sync read dates as Excel serials (`XLSX.read(text,{raw:false})` +
+      `sheet_to_json` default `raw:true`) → `new Date(45748.01)` → **everything collapsed to 1970-01-01**.
+      The upload path was fine (`workbook.ts` uses `cellDates:true`); only the sync was broken.
+- [x] `src/lib/ingest/sheets.ts` `fetchTabRows` now reads with `cellDates:true` → date cells arrive as JS Dates.
+- [x] `parseDate` (`src/lib/ingest/mapping.ts`) hardened + **exported**: passes `Date` through, converts finite
+      numbers via the Excel epoch (1899-12-30), else `new Date(String(v))`. `toDate` in `pipeline.ts` reuses it.
+- [x] Repro proven: `2025-04-01 0:27:14` → mapped `orderDate` year **2025** (was 1970). PASS.
+- [ ] Trigger a **full** sync against the live sheet and confirm 2025 history appears end-to-end (needs the
+      running app + reachable sheet; see PROGRESS "Resume here").
+
+### Seed = reference tables only (no synthetic orders)
+- [x] `src/db/seed.ts` no longer generates synthetic `order_lines`/`order_summary`/`customers`
+      (removed `randomOrderDate` Apr–Jul 2026 generator). Still seeds users/city_geo/data_sources/
+      schema_mappings/settings and still **clears** order tables so a re-seed drops stale/1970 rows.
+
+### Default date filter → This Month
+- [x] `src/lib/filters.ts` `resolveRange`: explicit `case "all"` (All Time) + `default:` now returns This Month.
+- [x] `src/components/layout/filter-bar.tsx`: "All Time" item applies `range:"all"` (persisted), not a cleared key.
+
+### Security hardening
+- [x] **Route guard confirmed active** — `src/proxy.ts` (Next 16 renamed `middleware`→`proxy`) builds an
+      Auth.js instance from edge-safe `authConfig`; build output lists `ƒ Proxy (Middleware)`. Matcher guards all
+      pages, excludes `/api/*` (own auth incl. the cron bearer), `login`, static assets. Function renamed to `proxy`.
+- [x] **Defense in depth:** `src/app/(app)/layout.tsx` redirects to `/login` when the user has no email
+      (anonymous guest) — no analytics renders without a session even if the proxy is bypassed.
+- [x] **Demo backdoor removed:** login page no longer pre-fills `admin@dtalemodern.com / password` and the
+      "Demo login is pre-filled" hint is gone.
+- [x] **No committed passwords:** seed reads `SEED_ADMIN_PASSWORD` or prints a random one; `.env.example`
+      ships empty `AUTH_SECRET`/`CRON_SECRET` with generation instructions + the empty-`CRON_SECRET` warning.
+- [x] **Session lifetime:** `auth.config.ts` sets `maxAge` 12h (`updateAge` 1h) instead of the 30-day default.
+- [x] Gate passes: `tsc` clean, `eslint` clean, `npm run build` green (`ƒ Proxy (Middleware)` present).
+- [ ] Browser-drive the access gate: logged-out `/dashboard` etc. → redirect to `/login`; admin login → loads;
+      `/admin/*` still 404 for a `sales` user (needs the running app).

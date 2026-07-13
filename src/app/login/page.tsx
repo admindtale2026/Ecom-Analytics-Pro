@@ -28,7 +28,7 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 required
-                defaultValue="admin@dtalemodern.com"
+                autoComplete="email"
                 className="w-full rounded-xl border border-line px-3.5 py-2.5 text-sm outline-none focus:border-brand-400"
                 placeholder="you@company.com"
               />
@@ -39,7 +39,7 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 required
-                defaultValue="password"
+                autoComplete="current-password"
                 className="w-full rounded-xl border border-line px-3.5 py-2.5 text-sm outline-none focus:border-brand-400"
                 placeholder="••••••••"
               />
@@ -61,10 +61,6 @@ export default function LoginPage() {
               Sign In
             </button>
           </form>
-
-          <p className="mt-5 rounded-lg bg-slate-50 px-3 py-2 text-center text-xs text-ink-soft">
-            Demo login is pre-filled — just click <span className="font-semibold">Sign In</span>.
-          </p>
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { HBar } from "@/components/charts/bar-chart";
 import { Donut } from "@/components/charts/donut";
-import { parseFilters, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, formatPercent, safeDivide, topNWithOther } from "@/lib/utils";
 import { getReps } from "@/server/sales-team";
 
@@ -25,12 +25,8 @@ function RankChip({ rank }: { rank: number }) {
   );
 }
 
-export default async function SalesTeamPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const f = parseFilters(await searchParams);
+export default async function SalesTeamPage() {
+  const f = await getFilters();
   const reps = await getReps(f);
 
   const totalRevenue = reps.reduce((s, r) => s + r.revenue, 0);
@@ -127,7 +123,7 @@ export default async function SalesTeamPage({
                     <td className="px-5 py-3.5 text-right text-ink-soft tnum">
                       {formatPercent(r.contribution)}
                     </td>
-                    <td className="px-5 py-3.5 text-right font-bold text-brand-600 tnum">
+                    <td className="px-5 py-3.5 text-right font-bold text-pos tnum">
                       {formatCurrency(r.revenue)}
                     </td>
                     <td className="px-5 py-3.5 text-right">

@@ -6,7 +6,9 @@ import type { NextAuthConfig } from "next-auth";
  */
 export const authConfig = {
   pages: { signIn: "/login" },
-  session: { strategy: "jwt" },
+  // 12h sessions instead of the 30-day default, so a leaked/forgotten session
+  // does not stay valid for a month. `updateAge` refreshes an active session.
+  session: { strategy: "jwt", maxAge: 60 * 60 * 12, updateAge: 60 * 60 },
   trustHost: true,
   providers: [],
   callbacks: {

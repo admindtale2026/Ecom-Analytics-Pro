@@ -119,6 +119,41 @@ export function normalizeLabel(raw: unknown): string | null {
   return titleCase(raw);
 }
 
+/**
+ * Canonicalise a salesperson name, and reject values that are clearly not names.
+ *
+ * The "Sales Person" source column is dirty in two ways the generic label
+ * normaliser can't fix:
+ *  - Junk leaks in from neighbouring columns — a stray remark
+ *    ("CustomerCancelled, Purchased another single seater") or a repeated header
+ *    row ("Sales Person"). These must not become phantom reps in the filter.
+ *  - The same rep appears under different casing ("amal"/"Amal", "REJ"/"Rej"),
+ *    which `normalizeLabel` (titleCase) would fold — but titleCase also mangles
+ *    genuine all-caps initials ("RK" -> "Rk"). So we fold case only for ordinary
+ *    single-word names and leave short all-caps handles (≤2 chars) alone.
+ */
+export function normalizeSalesperson(raw: unknown): string | null {
+  const s = clean(raw);
+  if (!s) return null;
+  // Reject non-name junk (a leaked remark/sentence or a repeated header row)
+  // WITHOUT excluding any plausible new rep. Real reps are short (1–4 words); a
+  // status sentence is longer. A comma alone is allowed (e.g. "Kumar, Anil") so
+  // any legitimate name still flows through to its store's filter.
+  if (s.toLowerCase() === "sales person") return null;
+  const words = s.split(/\s+/);
+  if (words.length > 4 || s.length > 30) return null;
+  // Fold casing per word so "amal"/"Amal" group and "anu k" -> "Anu K", while
+  // preserving short all-caps handles like "RK" (2-char tokens left untouched).
+  return words
+    .map((w) => {
+      if (!/^[A-Za-z]+$/.test(w)) return w; // has punctuation/digits -> leave as-is
+      if (w.length === 1) return w.toUpperCase(); // a standalone initial
+      if (w.length === 2) return w; // short all-caps handle, e.g. "RK"
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    })
+    .join(" ");
+}
+
 /** Display helper: turn a stored null into the "Unknown" bucket. */
 export function displayOrUnknown(value: string | null | undefined): string {
   return value && value.trim() !== "" ? value : UNKNOWN;

@@ -1,4 +1,4 @@
-import { and, eq, ilike, or, sql, type SQL } from "drizzle-orm";
+import { and, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { orderLines } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
@@ -15,6 +15,8 @@ export type OrderRow = {
   paymentAmount: number;
   salesPerson: string | null;
   status: string | null;
+  productName: string | null;
+  imageUrl: string | null;
 };
 
 export type OrdersQuery = {
@@ -31,13 +33,27 @@ function buildWhere(f: Filters, q: OrdersQuery): SQL {
   if (q.status) conds.push(eq(orderLines.status, q.status));
   if (q.q) {
     const term = `%${q.q}%`;
+    // productName/sku are line-level (they differ per line), unlike the other
+    // fields which repeat on every line of an order. Matching at the order level
+    // — "orders that contain a line matching the term" — keeps each table row a
+    // full order (correct Total Items / Qty / Payment) rather than just the one
+    // matching line.
+    const match = or(
+      ilike(orderLines.orderId, term),
+      ilike(orderLines.invoiceNo, term),
+      ilike(orderLines.shipCustomerName, term),
+      ilike(orderLines.shipMobile, term),
+      ilike(orderLines.productName, term),
+      ilike(orderLines.sku, term),
+    ) as SQL;
     conds.push(
-      or(
-        ilike(orderLines.orderId, term),
-        ilike(orderLines.invoiceNo, term),
-        ilike(orderLines.shipCustomerName, term),
-        ilike(orderLines.shipMobile, term),
-      ) as SQL,
+      inArray(
+        orderLines.orderId,
+        db
+          .select({ id: orderLines.orderId })
+          .from(orderLines)
+          .where(and(eq(orderLines.storeId, f.storeId), match)),
+      ),
     );
   }
   return and(...conds) as SQL;
@@ -63,6 +79,8 @@ export async function getOrders(
       paymentAmount: sql<number>`coalesce(sum(${orderLines.paymentAmount}),0)`,
       salesPerson: sql<string>`max(${orderLines.salesPerson})`,
       status: sql<string>`max(${orderLines.status})`,
+      productName: sql<string>`max(${orderLines.productName})`,
+      imageUrl: sql<string>`max(${orderLines.imageUrl})`,
       sortDate: sql<Date>`max(${orderLines.orderDate})`,
     })
     .from(orderLines)
@@ -85,6 +103,11 @@ export type OrderLineDetail = {
   productName: string | null;
   sku: string | null;
   productType: string | null;
+  fabric: string | null;
+  dimension: string | null;
+  polishFinish: string | null;
+  committedDeliveryDate: string | null;
+  dispatchedDate: string | null;
   quantity: number;
   paymentAmount: number;
   status: string | null;
@@ -105,6 +128,14 @@ export type OrderDetail = {
   shipCity: string | null;
   shipState: string | null;
   shipZip: string | null;
+  billingName: string | null;
+  billAddress: string | null;
+  billCity: string | null;
+  billState: string | null;
+  billCountry: string | null;
+  billZip: string | null;
+  billMobile: string | null;
+  billEmail: string | null;
   totalQuantity: number;
   totalPayment: number;
   lines: OrderLineDetail[];
@@ -129,9 +160,24 @@ export async function getOrderDetail(
       shipCity: orderLines.shipCity,
       shipState: orderLines.shipState,
       shipZip: orderLines.shipZip,
+      billingName: orderLines.billingCustomerName,
+      billAddress: orderLines.billAddress,
+      billCity: orderLines.billCity,
+      billState: orderLines.billState,
+      billCountry: orderLines.billCountry,
+      billZip: orderLines.billZip,
+      billMobile: orderLines.billMobile,
+      billEmail: orderLines.billEmail,
       productName: orderLines.productName,
       sku: orderLines.sku,
       productType: orderLines.productType,
+      fabric: orderLines.fabric,
+      dimension: orderLines.dimension,
+      polishFinish: orderLines.polishFinish,
+      committedDeliveryDate: sql<
+        string | null
+      >`to_char(${orderLines.committedDeliveryDate}, 'YYYY-MM-DD')`,
+      dispatchedDate: sql<string | null>`to_char(${orderLines.dispatchedDate}, 'YYYY-MM-DD')`,
       quantity: orderLines.quantity,
       paymentAmount: orderLines.paymentAmount,
       imageUrl: orderLines.imageUrl,
@@ -156,12 +202,25 @@ export async function getOrderDetail(
     shipCity: head.shipCity,
     shipState: head.shipState,
     shipZip: head.shipZip,
+    billingName: head.billingName,
+    billAddress: head.billAddress,
+    billCity: head.billCity,
+    billState: head.billState,
+    billCountry: head.billCountry,
+    billZip: head.billZip,
+    billMobile: head.billMobile,
+    billEmail: head.billEmail,
     totalQuantity: rows.reduce((s, r) => s + Number(r.quantity), 0),
     totalPayment: rows.reduce((s, r) => s + Number(r.paymentAmount), 0),
     lines: rows.map((r) => ({
       productName: r.productName,
       sku: r.sku,
       productType: r.productType,
+      fabric: r.fabric,
+      dimension: r.dimension,
+      polishFinish: r.polishFinish,
+      committedDeliveryDate: r.committedDeliveryDate,
+      dispatchedDate: r.dispatchedDate,
       quantity: Number(r.quantity),
       paymentAmount: Number(r.paymentAmount),
       status: r.status,

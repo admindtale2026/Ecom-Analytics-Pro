@@ -2,7 +2,8 @@ import Link from "next/link";
 import { AlertCircle, TrendingUp, Users, BarChart3, PackageX, Calendar } from "lucide-react";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { KpiCard } from "@/components/ui/kpi-card";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { type SearchParams  } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { cn, formatCurrency, formatNumber, initials } from "@/lib/utils";
 import { getBacklogByRep, getBacklogOrders, getBacklogTotals } from "@/server/not-processed";
 
@@ -18,7 +19,7 @@ export default async function NotProcessedPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const f = parseFilters(sp);
+  const f = await getFilters();
   const rep = one(sp.rep);
 
   const [totals, byRep, orders] = await Promise.all([
@@ -26,10 +27,8 @@ export default async function NotProcessedPage({
     getBacklogByRep(f),
     getBacklogOrders(f, rep),
   ]);
-
-  const query = filtersToQuery(f);
   const hrefFor = (name?: string) =>
-    `/not-processed?${query}${name ? `&rep=${encodeURIComponent(name)}` : ""}`;
+    `/not-processed${name ? `?rep=${encodeURIComponent(name)}` : ""}`;
 
   return (
     <div className="space-y-6 anim-rise">
@@ -128,7 +127,7 @@ export default async function NotProcessedPage({
                     <tr key={o.orderId} className="row-hover border-b border-line last:border-0 hover:bg-slate-50">
                       <td className="px-5 py-3.5 sm:px-6">
                         <Link
-                          href={`/not-processed/${encodeURIComponent(o.orderId)}?${query}`}
+                          href={`/not-processed/${encodeURIComponent(o.orderId)}`}
                           className="inline-flex rounded-md bg-brand-50 px-2 py-0.5 font-semibold text-brand-600 transition-colors duration-150 hover:bg-brand-100"
                         >
                           {o.orderId}

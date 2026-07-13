@@ -6,7 +6,7 @@ import { DetailHeader, MiniBar } from "@/components/ui/page-header";
 import { RevenueLine } from "@/components/charts/revenue-line";
 import { HBar } from "@/components/charts/bar-chart";
 import { ProductThumb } from "@/components/ui/product-thumb";
-import { parseFilters, filtersToQuery, type SearchParams } from "@/lib/filters";
+import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { getKpis, getDailyRevenue } from "@/server/dashboard";
 import { getStates } from "@/server/regions";
@@ -22,14 +22,12 @@ export const dynamic = "force-dynamic";
  */
 export default async function RepPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ name: string }>;
-  searchParams: Promise<SearchParams>;
 }) {
   const { name: rawName } = await params;
   const name = decodeURIComponent(rawName);
-  const base = parseFilters(await searchParams);
+  const base = await getFilters();
 
   const allReps = await getReps(base);
   const rep = allReps.find((r) => r.name === name);
@@ -43,7 +41,7 @@ export default async function RepPage({
     getProducts(f, { limit: 10 }),
   ]);
 
-  const backHref = `/sales-team?${filtersToQuery(base)}`;
+  const backHref = `/sales-team`;
   const maxUnits = Math.max(1, ...products.map((p) => p.units));
 
   return (
@@ -56,7 +54,7 @@ export default async function RepPage({
       />
 
       <div className="anim-stack grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <KpiCard label="Revenue" value={formatCurrency(kpis.revenue)} icon={<DollarSign className="h-5 w-5" />} delta={kpis.revenueDelta} />
+        <KpiCard label="Revenue" value={formatCurrency(kpis.revenue)} icon={<DollarSign className="h-5 w-5" />} delta={kpis.revenueDelta} money />
         <KpiCard label="Orders" value={formatNumber(kpis.orders)} icon={<ShoppingBag className="h-5 w-5" />} delta={kpis.ordersDelta} />
         <KpiCard label="Units Sold" value={formatNumber(kpis.units)} icon={<Boxes className="h-5 w-5" />} />
         <KpiCard label="Avg Order Value" value={formatCurrency(kpis.aov)} icon={<BarChart3 className="h-5 w-5" />} />
