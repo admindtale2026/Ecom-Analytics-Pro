@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Activity, Layers, MapPin } from "lucide-react";
 import { ClickableRow } from "@/components/ui/clickable-row";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
@@ -104,9 +105,14 @@ export default async function AnalyticsPage() {
                   className="group row-hover border-b border-line/70 last:border-0 hover:bg-brand-50/40"
                 >
                   <td className="px-5 py-3.5">
-                    <span className="font-semibold text-ink transition-colors duration-150 group-hover:text-brand-600">
+                    {/* Real anchor so the primary target navigates even before
+                        the page finishes hydrating (the row-level onClick can't). */}
+                    <Link
+                      href={`/analytics/${encodeURIComponent(row.productType)}`}
+                      className="font-semibold text-ink transition-colors duration-150 group-hover:text-brand-600"
+                    >
                       {row.productType}
-                    </span>
+                    </Link>
                   </td>
                   <td className="px-5 py-3.5 text-right font-semibold text-ink tnum">
                     {formatPercent(row.share)}
