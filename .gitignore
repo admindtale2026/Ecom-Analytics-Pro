@@ -40,6 +40,9 @@ yarn-error.log*
 /.playwright-mcp/
 /dashboard-smart-default.png
 
+# neon integration marker
+/.neon
+
 # vercel
 .vercel
 
