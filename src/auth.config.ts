@@ -15,8 +15,11 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isLogin = nextUrl.pathname.startsWith("/login");
-      if (isLogin) return true; // let the login page render
-      return isLoggedIn;
+      if (isLogin || isLoggedIn) return true; // let the login page render / allow in
+      // Redirect straight to a clean "/login" — no long "?callbackUrl=<abs url>"
+      // param (NextAuth's default). The login action always continues to
+      // /dashboard, so the callback param was unused noise in the address bar.
+      return Response.redirect(new URL("/login", nextUrl));
     },
     jwt({ token, user }) {
       if (user) {
