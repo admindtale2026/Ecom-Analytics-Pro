@@ -1,8 +1,9 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { dataSources } from "@/db/schema";
 import { STORES, type StoreId } from "@/lib/constants";
+import { dataTag } from "@/server/cache-tags";
 import { getCurrentUser } from "@/lib/session";
 import { resolveMapping } from "@/server/admin";
 import { fetchStoreWorkbook, isSheetsConfigured } from "@/lib/ingest/sheets";
@@ -110,6 +111,9 @@ async function handle(request: Request) {
   for (const storeId of targets) {
     try {
       results.push(await runSync(storeId, mode));
+      // The store's data changed — drop its cached aggregates so the next
+      // request recomputes. 'max' = stale-while-revalidate (Next 16 signature).
+      revalidateTag(dataTag(storeId), "max");
     } catch (err) {
       // One misconfigured store must not abort the others.
       failures.push({ store: storeId, error: (err as Error).message });

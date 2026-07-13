@@ -29,19 +29,24 @@ function prevWindow(f: Filters): SQL | null {
 }
 
 export async function getKpis(f: Filters): Promise<Kpis> {
-  const [cur] = await db
-    .select({ revenue: revenueSum, units: unitsSum, orders: orderCount })
-    .from(orderLines)
-    .where(orderLineWhere(f));
+  // Current and previous-period aggregates are independent, so fire them in one
+  // round-trip window instead of serially (halves the latency of this call —
+  // it matters most when compute and DB are far apart).
+  const pw = prevWindow(f);
+  const [[cur], prevRows] = await Promise.all([
+    db
+      .select({ revenue: revenueSum, units: unitsSum, orders: orderCount })
+      .from(orderLines)
+      .where(orderLineWhere(f)),
+    pw
+      ? db.select({ revenue: revenueSum, orders: orderCount }).from(orderLines).where(pw)
+      : Promise.resolve([]),
+  ]);
 
   let revenueDelta: number | null = null;
   let ordersDelta: number | null = null;
-  const pw = prevWindow(f);
-  if (pw) {
-    const [prev] = await db
-      .select({ revenue: revenueSum, orders: orderCount })
-      .from(orderLines)
-      .where(pw);
+  const prev = prevRows[0];
+  if (prev) {
     revenueDelta = prev.revenue ? ((cur.revenue - prev.revenue) / prev.revenue) * 100 : null;
     ordersDelta = prev.orders ? ((cur.orders - prev.orders) / prev.orders) * 100 : null;
   }
