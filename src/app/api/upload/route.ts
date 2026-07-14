@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     syncBatchId: batchId,
   });
   const summary = workbook.summary
-    ? await ingestOrderSummary(storeId, workbook.summary, { source: "upload" })
+    ? await ingestOrderSummary(storeId, workbook.summary, { source: "upload", mode: "full" })
     : null;
 
   // Every page reads this store's data; blow the whole cache for it.

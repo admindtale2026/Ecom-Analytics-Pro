@@ -25,8 +25,10 @@ export type SyncMode = "delta" | "full";
  *  - Vercel Cron sends `Authorization: Bearer $CRON_SECRET` (delta hourly, full nightly).
  *  - The Admin panel's Delta/Full Sync buttons post as a signed-in admin.
  *
- * Delta upserts on (store_id, row_hash), so running it twice changes nothing.
- * Full writes a fresh batch id and then deletes every line not in that batch,
+ * Delta upserts on (store_id, row_hash), so running it twice changes nothing;
+ * it inserts new orders and applies edits but never deletes (summary rows are
+ * refreshed in place, lines left intact). Full writes a fresh batch id and then
+ * deletes every line not in that batch — and wipes/reloads the summary tab —
  * which is the only way an upstream deletion propagates.
  */
 async function authorize(request: Request): Promise<boolean> {
@@ -62,7 +64,7 @@ async function runSync(storeId: StoreId, mode: SyncMode) {
     syncBatchId: batchId,
   });
   const summary = workbook.summary
-    ? await ingestOrderSummary(storeId, workbook.summary, { source: "sheets" })
+    ? await ingestOrderSummary(storeId, workbook.summary, { source: "sheets", mode })
     : null;
 
   const dropped = mode === "full" ? await dropStaleBatches(storeId, batchId) : 0;

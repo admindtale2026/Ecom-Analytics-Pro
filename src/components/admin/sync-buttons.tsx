@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 type Mode = "delta" | "full";
 
 const TOOLTIP: Record<Mode, string> = {
-  delta: "Upserts modifications and new rows only. Faster, leaves deleted rows intact.",
-  full: "Wipes the collection and writes everything from scratch. Slower, guarantees an exact match.",
+  delta: "Adds new rows and applies edits to existing ones. Never deletes. Faster.",
+  full: "Wipes every collection and reloads from scratch. Slower; guarantees an exact match, including deletions.",
 };
 
 /**
