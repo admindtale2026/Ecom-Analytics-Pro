@@ -1,12 +1,14 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Target, Sparkles, TrendingUp, Compass } from "lucide-react";
+import { Target, Sparkles, TrendingUp, Compass, Map as MapIcon, BarChart3 } from "lucide-react";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/ui/kpi-card";
 import { OpportunityScatter } from "@/components/charts/opportunity-scatter";
 import { MapCard, MapCardSkeleton } from "@/components/charts/map-card";
+import { CustomerAtlasLazy } from "@/components/charts/customer-atlas-lazy";
 import { getFilters } from "@/lib/filters-server";
-import { formatCurrency, formatNumber } from "@/lib/utils";
+import { cn, formatCurrency, formatNumber } from "@/lib/utils";
+import type { Filters } from "@/lib/filters";
 import {
   QUADRANT_BLURBS,
   QUADRANT_COLORS,
@@ -15,19 +17,20 @@ import {
   type Quadrant,
 } from "@/lib/opportunity";
 import { getOpportunityCities } from "@/server/opportunity";
+import { getAtlasPoints } from "@/server/atlas";
 
 export const dynamic = "force-dynamic";
 
 const QUADRANT_ORDER: Quadrant[] = ["scale", "defend", "hold", "nurture"];
 
-export default async function OpportunityPage() {
+export default async function OpportunityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const sp = await searchParams;
+  const view = sp?.view === "atlas" ? "atlas" : "overview";
   const f = await getFilters();
-  const { cities, medianOrders, medianAov } = await getOpportunityCities(f);
-  const recommended = recommendCities(cities, medianOrders);
-
-  const counts = Object.fromEntries(
-    QUADRANT_ORDER.map((q) => [q, cities.filter((c) => c.quadrant === q).length]),
-  ) as Record<Quadrant, number>;
 
   return (
     <div className="space-y-6 anim-rise">
@@ -37,11 +40,95 @@ export default async function OpportunityPage() {
           Ad Spend Opportunity
         </h2>
         <p className="mt-0.5 text-sm text-ink-soft">
-          Cities are split against the <strong className="font-semibold text-ink">median</strong> city —
-          not the mean, which a couple of runaway metros would drag upward.
+          Find where the next ad rupee works hardest — as a quadrant model, or on an interactive map
+          of every order.
           {f.salespeople.length ? ` Scoped to ${f.salespeople.join(", ")}.` : ""}
         </p>
       </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-line">
+        <TabLink href="/opportunity" active={view === "overview"} icon={<BarChart3 className="h-4 w-4" />}>
+          Overview
+        </TabLink>
+        <TabLink href="/opportunity?view=atlas" active={view === "atlas"} icon={<MapIcon className="h-4 w-4" />}>
+          Customer Atlas
+        </TabLink>
+      </div>
+
+      {view === "atlas" ? (
+        <Suspense fallback={<AtlasSkeleton />}>
+          <AtlasTab filters={f} />
+        </Suspense>
+      ) : (
+        <OverviewTab filters={f} />
+      )}
+    </div>
+  );
+}
+
+function TabLink({
+  href,
+  active,
+  icon,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors",
+        active
+          ? "border-brand-500 text-ink"
+          : "border-transparent text-ink-soft hover:text-ink",
+      )}
+    >
+      {icon}
+      {children}
+    </Link>
+  );
+}
+
+/* --------------------------------- Atlas -------------------------------- */
+
+async function AtlasTab({ filters }: { filters: Filters }) {
+  // The atlas reflects the global header filters directly — store, salesperson
+  // and the date window all apply through `orderLineWhere(f)`.
+  const data = await getAtlasPoints(filters);
+  return <CustomerAtlasLazy data={data} />;
+}
+
+function AtlasSkeleton() {
+  return (
+    <div
+      className="animate-pulse rounded-2xl border border-line bg-canvas"
+      style={{ height: "80vh", minHeight: 640 }}
+      aria-label="Loading atlas"
+    />
+  );
+}
+
+/* -------------------------------- Overview ------------------------------ */
+
+async function OverviewTab({ filters: f }: { filters: Filters }) {
+  const { cities, medianOrders, medianAov } = await getOpportunityCities(f);
+  const recommended = recommendCities(cities, medianOrders);
+
+  const counts = Object.fromEntries(
+    QUADRANT_ORDER.map((q) => [q, cities.filter((c) => c.quadrant === q).length]),
+  ) as Record<Quadrant, number>;
+
+  return (
+    <div className="space-y-6 anim-rise">
+      <p className="text-sm text-ink-soft">
+        Cities are split against the <strong className="font-semibold text-ink">median</strong> city —
+        not the mean, which a couple of runaway metros would drag upward.
+      </p>
 
       <div className="anim-stack grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatTile label="Active Cities" value={formatNumber(cities.length)} />

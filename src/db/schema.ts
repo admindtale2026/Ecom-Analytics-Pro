@@ -183,6 +183,19 @@ export const cityGeo = pgTable(
   (t) => [uniqueIndex("geo_unique_idx").on(t.city, t.state)],
 );
 
+/**
+ * Pincode -> lat/lng lookup. Places orders at postal-code granularity (finer
+ * than `city_geo`), so orders within a city scatter across their real pincodes
+ * and the atlas can derive a meaningful order-concentration radius. Orders whose
+ * `ship_zip` isn't a valid 6-digit pincode, or isn't in this table, fall back to
+ * the city centroid in `city_geo`.
+ */
+export const pincodeGeo = pgTable("pincode_geo", {
+  pincode: text("pincode").primaryKey(),
+  lat: doublePrecision("lat").notNull(),
+  lng: doublePrecision("lng").notNull(),
+});
+
 /** Generic key/value app settings (e.g. identity match mode). */
 export const settings = pgTable("settings", {
   key: text("key").primaryKey(),
