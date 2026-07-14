@@ -564,9 +564,9 @@ export function CustomerAtlas({ data }: { data: AtlasData }) {
                 <button
                   type="button"
                   onClick={clearMeasure}
-                  className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-line py-1.5 text-[11.5px] text-ink-soft hover:text-ink"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#d9433f] py-2 text-xs font-semibold text-white transition-colors hover:bg-[#b7322e]"
                 >
-                  <X className="h-3.5 w-3.5" /> Clear measurement
+                  <X className="h-3.5 w-3.5" /> Clear drawing
                 </button>
               )}
             </div>
@@ -688,6 +688,21 @@ export function CustomerAtlas({ data }: { data: AtlasData }) {
               {mode === "radius"
                 ? "Click a center, then click the edge to set the ad radius."
                 : "Click point A, then point B to measure the distance."}
+            </div>
+          )}
+          {measureResult && (
+            <div className="absolute left-1/2 top-4 z-[900] flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[#d9433f]/40 bg-card/95 px-3 py-1.5 shadow-lg backdrop-blur">
+              <span className="text-xs font-semibold text-ink">
+                {measureResult.kind === "radius" ? "Ad radius" : "Distance"} ·{" "}
+                <span className="tabular-nums">{fmtKm(measureResult.km)}</span>
+              </span>
+              <button
+                type="button"
+                onClick={clearMeasure}
+                className="flex items-center gap-1 rounded-lg bg-[#d9433f] px-2 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-[#b7322e]"
+              >
+                <X className="h-3 w-3" /> Clear
+              </button>
             </div>
           )}
           {data.unplaced.length > 0 && (
