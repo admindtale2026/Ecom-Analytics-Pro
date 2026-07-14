@@ -1,8 +1,16 @@
-import { and, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
-import { orderLines } from "@/db/schema";
+import { orderLines, orderSummary } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
-import { orderLineWhere, revenueSum, unitsSum, orderCount, repNameCol } from "./base";
+import {
+  orderLineWhere,
+  orderSummaryRevenueWhere,
+  revenueSum,
+  unitsSum,
+  summaryRevenueSum,
+  summaryOrderCount,
+  summaryRepNameCol,
+} from "./base";
 import { safeDivide } from "@/lib/utils";
 
 export type Kpis = {
@@ -14,32 +22,36 @@ export type Kpis = {
   ordersDelta: number | null;
 };
 
+/** Previous equal-length window, over order_summary revenue rows. */
 function prevWindow(f: Filters): SQL | null {
   if (!f.from || !f.to) return null;
   const span = f.to.getTime() - f.from.getTime();
   const prevTo = new Date(f.from.getTime() - 1);
   const prevFrom = new Date(prevTo.getTime() - span);
   const conds: SQL[] = [
-    eq(orderLines.storeId, f.storeId),
-    gte(orderLines.orderDate, prevFrom),
-    lte(orderLines.orderDate, prevTo),
+    eq(orderSummary.storeId, f.storeId),
+    gt(orderSummary.paymentAmount, 0),
+    gte(orderSummary.orderDate, prevFrom),
+    lte(orderSummary.orderDate, prevTo),
   ];
-  if (f.salespeople.length) conds.push(inArray(orderLines.salesPerson, f.salespeople));
+  if (f.salespeople.length) conds.push(inArray(orderSummary.salesPerson, f.salespeople));
   return and(...conds) as SQL;
 }
 
 export async function getKpis(f: Filters): Promise<Kpis> {
-  // Current and previous-period aggregates are independent, so fire them in one
-  // round-trip window instead of serially (halves the latency of this call —
-  // it matters most when compute and DB are far apart).
+  // Revenue / orders / AOV come from the Order Summary tab (authoritative order
+  // totals, incl. orders that never got line items); Units stays on the detail
+  // tab, the only place per-line quantities exist. Previous-period revenue is
+  // independent, so all three fire in one round-trip.
   const pw = prevWindow(f);
-  const [[cur], prevRows] = await Promise.all([
+  const [[cur], [unitsRow], prevRows] = await Promise.all([
     db
-      .select({ revenue: revenueSum, units: unitsSum, orders: orderCount })
-      .from(orderLines)
-      .where(orderLineWhere(f)),
+      .select({ revenue: summaryRevenueSum, orders: summaryOrderCount })
+      .from(orderSummary)
+      .where(orderSummaryRevenueWhere(f)),
+    db.select({ units: unitsSum }).from(orderLines).where(orderLineWhere(f)),
     pw
-      ? db.select({ revenue: revenueSum, orders: orderCount }).from(orderLines).where(pw)
+      ? db.select({ revenue: summaryRevenueSum, orders: summaryOrderCount }).from(orderSummary).where(pw)
       : Promise.resolve([]),
   ]);
 
@@ -54,7 +66,7 @@ export async function getKpis(f: Filters): Promise<Kpis> {
   return {
     revenue: cur.revenue,
     orders: cur.orders,
-    units: cur.units,
+    units: unitsRow.units,
     aov: safeDivide(cur.revenue, cur.orders),
     revenueDelta,
     ordersDelta,
@@ -64,11 +76,11 @@ export async function getKpis(f: Filters): Promise<Kpis> {
 export async function getDailyRevenue(f: Filters): Promise<{ date: string; revenue: number }[]> {
   const rows = await db
     .select({
-      date: sql<string>`to_char(${orderLines.orderDate}, 'YYYY-MM-DD')`,
-      revenue: revenueSum,
+      date: sql<string>`to_char(${orderSummary.orderDate}, 'YYYY-MM-DD')`,
+      revenue: summaryRevenueSum,
     })
-    .from(orderLines)
-    .where(orderLineWhere(f))
+    .from(orderSummary)
+    .where(orderSummaryRevenueWhere(f))
     .groupBy(sql`1`)
     .orderBy(sql`1`);
   return rows.filter((r) => r.date);
@@ -80,13 +92,13 @@ export async function getSalespersonPerformance(
 ): Promise<{ name: string; orders: number; revenue: number }[]> {
   return db
     .select({
-      name: repNameCol,
-      orders: orderCount,
-      revenue: revenueSum,
+      name: summaryRepNameCol,
+      orders: summaryOrderCount,
+      revenue: summaryRevenueSum,
     })
-    .from(orderLines)
-    .where(orderLineWhere(f))
-    .groupBy(orderLines.salesPerson)
+    .from(orderSummary)
+    .where(orderSummaryRevenueWhere(f))
+    .groupBy(orderSummary.salesPerson)
     .orderBy(sql`3 desc`)
     .limit(limit);
 }

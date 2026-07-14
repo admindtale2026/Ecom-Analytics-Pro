@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import { orderLines, orderSummary } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
 
@@ -20,11 +20,28 @@ export function orderSummaryWhere(f: Filters): SQL {
   return and(...conds) as SQL;
 }
 
+/**
+ * Revenue is read from the Order Summary tab (one authoritative row per order),
+ * counting only rows that actually carry a Payment Amount — blank cells are
+ * prior-month / incomplete entries and are ignored.
+ */
+export function orderSummaryRevenueWhere(f: Filters): SQL {
+  return and(orderSummaryWhere(f), gt(orderSummary.paymentAmount, 0)) as SQL;
+}
+
 /** Sum/avg helpers used across metric queries. */
 export const revenueSum = sql<number>`coalesce(sum(${orderLines.paymentAmount}),0)`;
 export const unitsSum = sql<number>`coalesce(sum(${orderLines.quantity}),0)`;
 export const orderCount = sql<number>`count(distinct ${orderLines.orderId})`;
 export const lineCount = sql<number>`count(*)`;
+
+/**
+ * Summary-side aggregates. Revenue, orders, AOV, the daily chart and salesperson
+ * revenue all read from order_summary so the biggest orders — which live only on
+ * that tab — are counted. One summary row = one order.
+ */
+export const summaryRevenueSum = sql<number>`coalesce(sum(${orderSummary.paymentAmount}),0)`;
+export const summaryOrderCount = sql<number>`count(*)`;
 
 /**
  * Orders whose sheet row carries no salesperson. The reference app labelled the
@@ -36,6 +53,9 @@ export const UNATTRIBUTED = "Unattributed";
 
 /** Display name for a rep, with the blank bucket named rather than invented. */
 export const repNameCol = sql<string>`coalesce(nullif(trim(${orderLines.salesPerson}), ''), ${UNATTRIBUTED})`;
+
+/** Same, over order_summary — the source of truth for salesperson revenue. */
+export const summaryRepNameCol = sql<string>`coalesce(nullif(trim(${orderSummary.salesPerson}), ''), ${UNATTRIBUTED})`;
 
 /** Place labels. Ingest normalises case/aliases, so these only fill in blanks. */
 export const stateNameCol = sql<string>`coalesce(nullif(trim(${orderLines.shipState}), ''), 'Unknown')`;

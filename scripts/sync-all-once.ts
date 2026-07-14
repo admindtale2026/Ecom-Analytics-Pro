@@ -36,7 +36,7 @@ async function runSync(storeId: StoreId) {
     syncBatchId: batchId,
   });
   const summary = workbook.summary
-    ? await ingestOrderSummary(storeId, workbook.summary, { source: "sheets" })
+    ? await ingestOrderSummary(storeId, workbook.summary, { source: "sheets", mode: "full" })
     : null;
   const dropped = await dropStaleBatches(storeId, batchId);
   await db
