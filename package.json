@@ -11,9 +11,11 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
     "db:seed-geo": "tsx src/db/seed-geo.ts",
+    "db:seed-pincode-geo": "tsx src/db/seed-pincode-geo.ts",
     "db:sync": "tsx scripts/sync-all-once.ts",
     "db:check": "tsx scripts/check-db.ts",
-    "build:geo": "tsx scripts/build-geo.ts"
+    "build:geo": "tsx scripts/build-geo.ts",
+    "build:pincode-geo": "tsx scripts/build-pincode-geo.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
