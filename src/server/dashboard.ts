@@ -98,7 +98,10 @@ export async function getSalespersonPerformance(
     })
     .from(orderSummary)
     .where(orderSummaryRevenueWhere(f))
-    .groupBy(orderSummary.salesPerson)
+    // Group by the normalised name, not the raw column: NULL and '' are distinct
+    // raw values that both display as "Unattributed", and grouping raw would
+    // emit one bar per variant — evicting real reps from the limit.
+    .groupBy(sql`1`)
     .orderBy(sql`3 desc`)
     .limit(limit);
 }

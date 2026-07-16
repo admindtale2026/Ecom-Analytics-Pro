@@ -112,7 +112,15 @@ export async function getCitiesInState(f: Filters, state: string, limit = 6) {
   return rows.map(toPlace);
 }
 
-/** Rep leaderboard scoped to a state or a city. */
+/**
+ * Rep leaderboard scoped to a state or a city.
+ *
+ * Line-side on purpose, unlike the store-wide board in sales-team.ts: geography
+ * exists only on order_lines, so a per-place rep total can only be built here.
+ * It will not reconcile with the Dashboard — orders still absent from
+ * OrderDetails have no place to be counted in — and that is correct, not a bug
+ * to be "fixed" by pointing it at order_summary.
+ */
 async function repsIn(where: SQL, limit: number) {
   const rows = await db
     .select({
