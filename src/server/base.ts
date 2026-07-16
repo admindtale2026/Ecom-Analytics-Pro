@@ -1,4 +1,5 @@
 import { and, eq, gt, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
+import type { PgColumn } from "drizzle-orm/pg-core";
 import { orderLines, orderSummary } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
 
@@ -51,11 +52,20 @@ export const summaryOrderCount = sql<number>`count(*)`;
  */
 export const UNATTRIBUTED = "Unattributed";
 
-/** Display name for a rep, with the blank bucket named rather than invented. */
-export const repNameCol = sql<string>`coalesce(nullif(trim(${orderLines.salesPerson}), ''), ${UNATTRIBUTED})`;
+/**
+ * Display name for a rep, with the blank bucket named rather than invented.
+ *
+ * Both tables go through one factory because getReps groups each tab separately
+ * and merges the results on this name: the merge is only correct while the two
+ * expressions are character-for-character identical.
+ */
+const repName = (col: PgColumn): SQL<string> =>
+  sql<string>`coalesce(nullif(trim(${col}), ''), ${UNATTRIBUTED})`;
+
+export const repNameCol = repName(orderLines.salesPerson);
 
 /** Same, over order_summary — the source of truth for salesperson revenue. */
-export const summaryRepNameCol = sql<string>`coalesce(nullif(trim(${orderSummary.salesPerson}), ''), ${UNATTRIBUTED})`;
+export const summaryRepNameCol = repName(orderSummary.salesPerson);
 
 /** Place labels. Ingest normalises case/aliases, so these only fill in blanks. */
 export const stateNameCol = sql<string>`coalesce(nullif(trim(${orderLines.shipState}), ''), 'Unknown')`;
