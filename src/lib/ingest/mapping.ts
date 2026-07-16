@@ -109,14 +109,40 @@ function parseNumber(v: unknown): number {
 /** Excel serial-date epoch is 1899-12-30 (accounts for the 1900 leap-year bug). */
 const EXCEL_EPOCH_MS = Date.UTC(1899, 11, 30);
 
+/** `d/m/yyyy` or `d-m-yyyy`, with an optional trailing clock. */
+const DMY_RE = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:[\sT]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/;
+
+/**
+ * Parse a `d/m/yyyy` string as day-first, rejecting anything that isn't a real
+ * calendar date. The round-trip check matters because the Date constructor rolls
+ * overflow forward — `31/02` would silently become 3 March — and a wrong date is
+ * worse than no date.
+ */
+function parseDayFirst(s: string): Date | null {
+  const m = DMY_RE.exec(s);
+  if (!m) return null;
+  const [day, month, year] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const d = new Date(year, month - 1, day, Number(m[4] ?? 0), Number(m[5] ?? 0), Number(m[6] ?? 0));
+  if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
+  return d;
+}
+
 /**
  * Parse a date cell defensively, regardless of what the reader hands us:
  *  - a JS Date (upload path, or CSV read with `cellDates:true`) → pass through;
  *  - a finite number = an Excel serial date → convert via the Excel epoch,
  *    NOT `new Date(n)` (which would read it as ms-since-1970 → year 1970);
  *  - anything else → `new Date(String(v))`.
+ *
+ * `dayFirst` opts a source into DD/MM/YYYY for *text* dates only. It exists
+ * because `new Date("13/06/2026")` is not a parse failure the caller can see —
+ * it is `Invalid Date` for days past the 12th and, worse, a silently wrong month
+ * for days 1-12 ("12/06/2026" → 6 December). Only turn it on for a source whose
+ * text dates are known day-first; a column mixing both conventions cannot be
+ * resolved here and must be fixed upstream. Date and serial cells are already
+ * unambiguous, so the flag never touches them.
  */
-export function parseDate(v: unknown): Date | null {
+export function parseDate(v: unknown, opts: { dayFirst?: boolean } = {}): Date | null {
   if (v == null || v === "") return null;
   if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
   if (typeof v === "number") {
@@ -124,7 +150,12 @@ export function parseDate(v: unknown): Date | null {
     const d = new Date(EXCEL_EPOCH_MS + v * 86400000);
     return Number.isNaN(d.getTime()) ? null : d;
   }
-  const d = new Date(String(v));
+  const s = String(v).trim();
+  if (opts.dayFirst) {
+    const dmy = parseDayFirst(s);
+    if (dmy) return dmy;
+  }
+  const d = new Date(s);
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
