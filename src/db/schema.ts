@@ -92,8 +92,11 @@ export const orderLines = pgTable(
 );
 
 /**
- * order_summary: rows from the lightweight "Order Summary" sheet.
- * An orderId present here but absent from order_lines => "Not Processed".
+ * order_summary: rows from the lightweight "Order Summary" sheet, one per order
+ * and the source of truth for revenue. Only rows carrying a payment are stored.
+ * A paid, identified orderId present here but absent from order_lines =>
+ * "Not Processed". Rows whose OrderId cell was blank carry a synthetic id
+ * (SYNTHETIC_ID_PREFIX) and count toward revenue only.
  */
 export const orderSummary = pgTable(
   "order_summary",

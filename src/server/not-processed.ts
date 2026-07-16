@@ -1,17 +1,33 @@
-import { and, eq, notExists, sql, type SQL } from "drizzle-orm";
+import { and, eq, gt, notExists, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { orderLines, orderSummary } from "@/db/schema";
+import { SYNTHETIC_ID_PREFIX } from "@/lib/ingest/pipeline";
 import type { Filters } from "@/lib/filters";
 import { orderSummaryWhere, UNATTRIBUTED } from "./base";
 
 /**
- * "Not processed" = the order exists in the lightweight Order Summary sheet but
- * no line items were ever written to the warehouse repository, so we know the
- * revenue but nothing about what was actually bought.
+ * A summary row whose OrderId cell was blank. `starts_with` rather than `like`:
+ * `_` is a single-character wildcard to `like`, which would match other ids.
+ */
+const isIdentified = sql`not starts_with(${orderSummary.orderId}, ${SYNTHETIC_ID_PREFIX})`;
+
+/**
+ * "Not processed" = a paid, identified order exists in the lightweight Order
+ * Summary sheet but no line items were ever written to the warehouse
+ * repository, so we know the revenue but nothing about what was actually
+ * bought. The sheet is edited live, so summary rows routinely arrive before
+ * their detail rows and a later sync clears them from this list.
+ *
+ * Two kinds of summary row are excluded, neither being something an operator
+ * can action: unpaid rows, which aren't sales yet; and blank-OrderId rows,
+ * whose synthetic id can never match a line item — they would sit here forever
+ * and inflate the trapped revenue.
  */
 function backlogWhere(f: Filters): SQL {
   return and(
     orderSummaryWhere(f),
+    gt(orderSummary.paymentAmount, 0),
+    isIdentified,
     notExists(
       db
         .select({ one: sql`1` })
@@ -96,6 +112,13 @@ export async function getBacklogOrder(
       paymentAmount: orderSummary.paymentAmount,
     })
     .from(orderSummary)
-    .where(and(eq(orderSummary.storeId, storeId), eq(orderSummary.orderId, orderId)));
+    .where(
+      and(
+        eq(orderSummary.storeId, storeId),
+        eq(orderSummary.orderId, orderId),
+        gt(orderSummary.paymentAmount, 0),
+        isIdentified,
+      ),
+    );
   return row ? { ...row, paymentAmount: Number(row.paymentAmount) } : null;
 }
