@@ -2,8 +2,9 @@ import { and, eq, gte, ilike, lte, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { orderLines } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
+import type { StoreId } from "@/lib/constants";
 import { orderLineWhere, revenueSum, unitsSum, orderCount, repNameCol, cityNameCol, stateNameCol } from "./base";
-import { safeDivide } from "@/lib/utils";
+import { safeDivide, slugify } from "@/lib/utils";
 
 const nameCol = sql<string>`coalesce(nullif(${orderLines.productName}, ''), 'Unnamed product')`;
 
@@ -13,6 +14,7 @@ function productWhere(f: Filters, name: string): SQL {
 
 export type ProductListRow = {
   name: string;
+  slug: string;
   imageUrl: string | null;
   category: string | null;
   sku: string | null;
@@ -52,6 +54,7 @@ export async function getProducts(
 
   return rows.map((r) => ({
     name: r.name,
+    slug: slugify(r.name),
     imageUrl: r.imageUrl,
     category: r.category,
     sku: r.sku,
@@ -70,6 +73,25 @@ export async function getProductCategories(f: Filters): Promise<string[]> {
     .where(eq(orderLines.storeId, f.storeId))
     .orderBy(orderLines.productCategory);
   return rows.map((r) => r.c!).filter(Boolean);
+}
+
+/**
+ * Resolve a product-page slug (e.g. "zena-dining-chair") back to the exact
+ * product name to query. Scoped only by store — not the full filter set —
+ * so a product's URL doesn't shift depending on the viewer's active date/
+ * salesperson filters. A handful of names in the source data differ only by
+ * casing/spacing (data-entry inconsistency) and collide onto the same slug;
+ * that's resolved deterministically to the alphabetically-first match.
+ */
+export async function resolveProductSlug(storeId: StoreId, slug: string): Promise<string | null> {
+  const rows = await db
+    .selectDistinct({ name: nameCol })
+    .from(orderLines)
+    .where(eq(orderLines.storeId, storeId));
+  const matches = rows.map((r) => r.name).filter((n) => slugify(n) === slug);
+  if (!matches.length) return null;
+  matches.sort((a, b) => a.localeCompare(b));
+  return matches[0];
 }
 
 export type ProductDetail = {

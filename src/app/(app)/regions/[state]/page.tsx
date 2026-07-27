@@ -4,10 +4,9 @@ import { Globe, Users, Building2, Tag, Package } from "lucide-react";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/ui/kpi-card";
 import { DetailHeader } from "@/components/ui/page-header";
-import { ProductLink } from "@/components/inventory/product-link";
 import { Donut } from "@/components/charts/donut";
 import { getFilters } from "@/lib/filters-server";
-import { formatCurrency, formatNumber, initials } from "@/lib/utils";
+import { formatCurrency, formatNumber, initials, slugify } from "@/lib/utils";
 import {
   getCitiesInState,
   getProductsInState,
@@ -143,12 +142,12 @@ export default async function StatePage({
                           <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-ink-soft tnum">
                             {i + 1}
                           </span>
-                          <ProductLink
-                            name={p.name}
+                          <Link
+                            href={`/inventory/${slugify(p.name)}`}
                             className="truncate font-semibold text-ink hover:text-brand-600"
                           >
                             {p.name}
-                          </ProductLink>
+                          </Link>
                         </span>
                       </td>
                       <td className="px-5 py-3">

@@ -76,6 +76,15 @@ export function topNWithOther<T extends { label: string; value: number }>(
   return rest > 0 ? [...head, { label: "Other", value: rest }] : head;
 }
 
+/** Dash-separated, URL-safe key derived from a display name (e.g. product name). */
+export function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function initials(name: string | null | undefined): string {
   if (!name) return "?";
   const parts = name.trim().split(/\s+/);
