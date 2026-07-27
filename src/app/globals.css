@@ -181,6 +181,22 @@ body {
   }
 }
 
+@keyframes slide-in-right {
+  from {
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.panel-slide {
+  animation: slide-in-right var(--dur-slow) var(--ease-out);
+}
+.panel-slide[data-state="closed"] {
+  animation: slide-in-right var(--dur-base) var(--ease-out) reverse;
+}
+
 /* A slim brand bar sweeps left-to-right on store switch, then fades. */
 @keyframes sweep {
   0% {

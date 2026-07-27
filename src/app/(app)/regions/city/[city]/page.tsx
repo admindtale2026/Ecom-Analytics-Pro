@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Users, Tag, Package, TrendingUp, UserCheck } from "lucide-react";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/ui/kpi-card";
 import { DetailHeader } from "@/components/ui/page-header";
+import { ProductLink } from "@/components/inventory/product-link";
 import { Donut } from "@/components/charts/donut";
 import { RevenueLine } from "@/components/charts/revenue-line";
 import { HBar } from "@/components/charts/bar-chart";
@@ -88,12 +88,12 @@ export default async function CityPage({
                   {products.map((p) => (
                     <tr key={p.name} className="row-hover border-b border-line last:border-0 hover:bg-slate-50">
                       <td className="px-5 py-3 sm:px-6">
-                        <Link
-                          href={`/inventory/${encodeURIComponent(p.name)}`}
+                        <ProductLink
+                          name={p.name}
                           className="font-semibold text-ink hover:text-brand-600"
                         >
                           {p.name}
-                        </Link>
+                        </ProductLink>
                       </td>
                       <td className="px-5 py-3 text-right text-ink tnum">{formatNumber(p.orders)}</td>
                       <td className="px-5 py-3 text-right text-ink tnum">{formatNumber(p.units)}</td>
