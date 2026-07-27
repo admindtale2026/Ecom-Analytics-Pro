@@ -1,4 +1,4 @@
-import { and, eq, ilike, or, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, ilike, lte, or, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db/client";
 import { orderLines } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
@@ -212,7 +212,8 @@ export async function getProductMonthly(
       and(
         eq(orderLines.storeId, f.storeId),
         eq(nameCol, name),
-        sql`${orderLines.orderDate} between ${from} and ${to}`,
+        gte(orderLines.orderDate, from),
+        lte(orderLines.orderDate, to),
       ) as SQL,
     )
     .groupBy(sql`1`);
