@@ -110,7 +110,7 @@ export default async function ProductPage({
       />
 
       <div className="flex items-center gap-4">
-        <ProductThumb imageUrl={detail.imageUrl} name={detail.name} size={96} className="rounded-2xl" />
+        <ProductThumb imageUrl={detail.imageUrl} name={detail.name} size={200} className="rounded-2xl" />
       </div>
 
       <div className="anim-stack grid grid-cols-2 gap-4 xl:grid-cols-4">
