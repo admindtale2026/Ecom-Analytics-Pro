@@ -66,10 +66,9 @@ export const orderLines = pgTable(
     syncBatchId: text("sync_batch_id"),
     /**
      * Stable identity of a line, hashed from its *immutable* descriptors only
-     * (order id, sku, product, dimension, fabric, finish). Mutable fields —
-     * quantity, payment, status, dispatch dates — are what an upsert writes on
-     * conflict, so re-running a delta sync updates in place instead of
-     * duplicating rows.
+     * (order id, sku, product, dimension, fabric, finish). Every other column
+     * is mutable — an upsert refreshes them all on conflict, so re-running a
+     * sync updates a matched line in place instead of duplicating rows.
      */
     rowHash: text("row_hash"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
