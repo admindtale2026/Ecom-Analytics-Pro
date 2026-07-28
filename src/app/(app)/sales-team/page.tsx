@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Trophy, DollarSign, Zap, Users, TrendingUp, Award, ArrowRight } from "lucide-react";
 import { Card, CardBody, CardTitle } from "@/components/ui/card";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { HBar } from "@/components/charts/bar-chart";
 import { Donut } from "@/components/charts/donut";
@@ -109,14 +110,24 @@ export default async function SalesTeamPage() {
               </thead>
               <tbody>
                 {reps.map((r, i) => (
-                  <tr
+                  <ClickableRow
                     key={r.name}
-                    className="row-hover border-b border-line last:border-0 hover:bg-slate-50"
+                    href={`/sales-team/${encodeURIComponent(r.name)}`}
+                    className="group row-hover border-b border-line last:border-0 hover:bg-slate-50"
                   >
                     <td className="px-5 py-3.5 sm:px-6">
                       <RankChip rank={i + 1} />
                     </td>
-                    <td className="px-5 py-3.5 font-semibold text-ink">{r.name}</td>
+                    <td className="px-5 py-3.5 font-semibold text-ink">
+                      {/* Real anchor so the primary target navigates even before
+                          the page finishes hydrating (the row-level onClick can't). */}
+                      <Link
+                        href={`/sales-team/${encodeURIComponent(r.name)}`}
+                        className="transition-colors duration-150 group-hover:text-brand-600"
+                      >
+                        {r.name}
+                      </Link>
+                    </td>
                     <td className="px-5 py-3.5 text-right text-ink tnum">{formatNumber(r.orders)}</td>
                     <td className="px-5 py-3.5 text-right text-ink tnum">{formatNumber(r.units)}</td>
                     <td className="px-5 py-3.5 text-right text-ink tnum">{formatCurrency(r.aov)}</td>
@@ -135,7 +146,7 @@ export default async function SalesTeamPage() {
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </td>
-                  </tr>
+                  </ClickableRow>
                 ))}
                 {!reps.length && (
                   <tr>
