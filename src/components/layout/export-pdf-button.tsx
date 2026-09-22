@@ -30,6 +30,18 @@ export function ExportPdfButton() {
         backgroundColor: "#f6f7f9",
         scale: 2,
         useCORS: true,
+        // html2canvas clones the target into a hidden iframe to render it, which
+        // re-triggers our mount animations (.anim-rise / .anim-stack) from their
+        // opacity:0 first frame. The snapshot then lands mid-fade and the whole
+        // page reads as a washed-out white overlay. Freeze all animation and
+        // transition in the clone so it renders at its resting state (opacity:1,
+        // transform:none). This touches only the throwaway clone, not the live UI.
+        onclone: (doc) => {
+          const style = doc.createElement("style");
+          style.textContent =
+            "*,*::before,*::after{animation:none!important;transition:none!important}";
+          doc.head.appendChild(style);
+        },
       });
       const img = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
