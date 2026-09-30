@@ -282,10 +282,10 @@ export function CustomerAtlas({ data }: { data: AtlasData }) {
     }).fitBounds(INDIA_BOUNDS);
     mapRef.current = map;
     L.control.zoom({ position: "bottomright" }).addTo(map);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      subdomains: "abcd",
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      subdomains: "abc",
       maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+      attribution: "&copy; OpenStreetMap contributors",
     }).addTo(map);
 
     bubbleLayerRef.current = L.layerGroup().addTo(map);
