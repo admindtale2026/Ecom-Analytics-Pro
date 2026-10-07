@@ -4,24 +4,41 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/ui/kpi-card";
 import { DetailHeader } from "@/components/ui/page-header";
 import { ProductThumb } from "@/components/ui/product-thumb";
+import { FulfilmentBadge } from "@/components/ui/status-badge";
+import { ProductTableControls } from "@/components/analytics/product-table-controls";
+import type { SearchParams } from "@/lib/filters";
 import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
-import { getTopProductsForType, getTypeDetail } from "@/server/analytics";
+import {
+  getFulfilmentTypesForType,
+  getTopProductsForType,
+  getTypeDetail,
+} from "@/server/analytics";
 
 export const dynamic = "force-dynamic";
 
+function one(v: string | string[] | undefined) {
+  return Array.isArray(v) ? v[0] : v;
+}
+
 export default async function ProductTypePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ type: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
   const { type: rawType } = await params;
   const type = decodeURIComponent(rawType);
+  const sp = await searchParams;
+  const showAll = one(sp.view) === "all";
+  const fulfilment = one(sp.fulfilment);
   const f = await getFilters();
 
-  const [detail, products] = await Promise.all([
+  const [detail, products, fulfilmentTypes] = await Promise.all([
     getTypeDetail(f, type),
-    getTopProductsForType(f, type),
+    getTopProductsForType(f, type, { limit: showAll ? null : 20, fulfilment }),
+    getFulfilmentTypesForType(f, type),
   ]);
   if (!detail.orders) notFound();
 
@@ -55,11 +72,16 @@ export default async function ProductTypePage({
       </div>
 
       <Card>
-        <CardBody className="pb-0">
+        <CardBody className="flex flex-col gap-4 pb-0 lg:flex-row lg:items-center lg:justify-between">
           <CardTitle
-            title={`Top ${products.length} Best Selling Products`}
+            title={
+              showAll
+                ? `All Products with Sales (${formatNumber(products.length)})`
+                : `Top ${products.length} Best Selling Products`
+            }
             icon={<CircleCheck className="h-5 w-5" />}
           />
+          <ProductTableControls fulfilmentTypes={fulfilmentTypes} />
         </CardBody>
         <div className="overflow-x-auto scroll-slim">
           <table className="w-full min-w-[640px] text-sm">
@@ -87,7 +109,14 @@ export default async function ProductTypePage({
                   <td className="px-5 py-3">
                     <span className="flex items-center gap-3">
                       <ProductThumb imageUrl={p.imageUrl} name={p.name} />
-                      <span className="font-semibold text-ink">{p.name}</span>
+                      <span className="flex flex-col gap-1">
+                        <span className="font-semibold text-ink">{p.name}</span>
+                        {p.fulfilment && (
+                          <span>
+                            <FulfilmentBadge value={p.fulfilment} />
+                          </span>
+                        )}
+                      </span>
                     </span>
                   </td>
                   <td className="px-5 py-3 text-right font-semibold text-ink tnum">
