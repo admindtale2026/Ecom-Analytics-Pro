@@ -192,36 +192,66 @@ export async function getTypeDetail(f: Filters, type: string): Promise<TypeDetai
 export type ProductRow = {
   name: string;
   imageUrl: string | null;
+  /** Fulfilment class, from product_category: "Made To Order" / "Ready To Ship" / "Warehouse Sale". Null when untagged. */
+  fulfilment: string | null;
   units: number;
   revenue: number;
   aov: number;
 };
 
-/** Top-selling products within a product type. */
+/**
+ * Products within a product type, ranked by revenue.
+ *
+ * `opts.limit` caps the list (default 20 for the "top sellers" view); pass
+ * `null` to return every product that sold in the window. `opts.fulfilment`
+ * narrows to one fulfilment class (product_category) — the per-category filter.
+ */
 export async function getTopProductsForType(
   f: Filters,
   type: string,
-  limit = 20,
+  opts: { limit?: number | null; fulfilment?: string } = {},
 ): Promise<ProductRow[]> {
-  const rows = await db
+  const { limit = 20, fulfilment } = opts;
+  const where = fulfilment
+    ? (and(typeWhere(f, type), eq(orderLines.productCategory, fulfilment)) as SQL)
+    : typeWhere(f, type);
+
+  const base = db
     .select({
       name: sql<string>`coalesce(nullif(${orderLines.productName}, ''), 'Unnamed product')`,
       imageUrl: sql<string | null>`max(${orderLines.imageUrl})`,
+      fulfilment: sql<string | null>`max(${orderLines.productCategory})`,
       units: unitsSum,
       revenue: revenueSum,
       orders: orderCount,
     })
     .from(orderLines)
-    .where(typeWhere(f, type))
+    .where(where)
     .groupBy(sql`1`)
-    .orderBy(sql`4 desc`)
-    .limit(limit);
+    .orderBy(sql`5 desc`);
+
+  const rows = await (limit == null ? base : base.limit(limit));
 
   return rows.map((r) => ({
     name: r.name,
     imageUrl: r.imageUrl,
+    fulfilment: r.fulfilment,
     units: Number(r.units),
     revenue: Number(r.revenue),
     aov: safeDivide(Number(r.revenue), Number(r.orders)),
   }));
+}
+
+/**
+ * Distinct fulfilment classes (product_category) present for a product type in
+ * the current window — populates the per-category "Filter by" dropdown so only
+ * options that actually have products appear.
+ */
+export async function getFulfilmentTypesForType(f: Filters, type: string): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ c: orderLines.productCategory })
+    .from(orderLines)
+    .where(typeWhere(f, type))
+    .orderBy(orderLines.productCategory);
+  return rows.map((r) => r.c).filter((c): c is string => Boolean(c && c.trim()));
 }
