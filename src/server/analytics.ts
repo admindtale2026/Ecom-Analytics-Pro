@@ -79,22 +79,8 @@ export async function getTrajectory(
   return rows.filter((r) => r.date).map((r) => ({ ...r, orders: Number(r.orders) }));
 }
 
-/**
- * Full product-type matrix, ranked by revenue, with share of total.
- *
- * `opts.fulfilment` narrows every row to a single fulfilment class
- * (product_category) — e.g. "Warehouse Sale" for the Warehouse Sale page. Share
- * is then computed within the filtered set, so it reads as "share of warehouse
- * sale revenue", not share of all revenue.
- */
-export async function getProductTypeMatrix(
-  f: Filters,
-  opts: { fulfilment?: string } = {},
-): Promise<ProductTypeRow[]> {
-  const where = opts.fulfilment
-    ? (and(orderLineWhere(f), eq(orderLines.productCategory, opts.fulfilment)) as SQL)
-    : orderLineWhere(f);
-
+/** Full product-type matrix, ranked by revenue, with share of total. */
+export async function getProductTypeMatrix(f: Filters): Promise<ProductTypeRow[]> {
   const rows = await db
     .select({
       productType,
@@ -103,7 +89,7 @@ export async function getProductTypeMatrix(
       units: unitsSum,
     })
     .from(orderLines)
-    .where(where)
+    .where(orderLineWhere(f))
     .groupBy(sql`1`)
     .orderBy(sql`2 desc`);
 
