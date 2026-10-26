@@ -11,6 +11,7 @@ import {
   UserCog,
   Settings,
   Map,
+  Warehouse,
 } from "lucide-react";
 
 export type NavItem = {
@@ -31,6 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Not Processed", href: "/not-processed", icon: PackageX, group: "main" },
   { label: "Regions", href: "/regions", icon: MapPin, group: "main" },
   { label: "Ad Opportunity", href: "/opportunity", icon: Map, group: "main" },
+  { label: "Warehouse Sale", href: "/warehouse-sale", icon: Warehouse, group: "main" },
   { label: "Manage Users", href: "/admin/users", icon: UserCog, group: "system", adminOnly: true },
   { label: "Admin Settings", href: "/admin/settings", icon: Settings, group: "system", adminOnly: true },
 ];
