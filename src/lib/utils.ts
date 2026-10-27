@@ -85,6 +85,19 @@ export function slugify(s: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Format a date as `DD-MM-YYYY` (zero-padded). Used for the "created on" label
+ * shown against established (non-new) products. Null/invalid → an em dash.
+ */
+export function formatDMY(value: Date | string | null | undefined): string {
+  if (value == null) return "—";
+  const d = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(d.getTime())) return "—";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}-${mm}-${d.getFullYear()}`;
+}
+
 export function initials(name: string | null | undefined): string {
   if (!name) return "?";
   const parts = name.trim().split(/\s+/);

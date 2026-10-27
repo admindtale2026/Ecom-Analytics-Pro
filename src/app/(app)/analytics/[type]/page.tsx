@@ -6,6 +6,7 @@ import { DetailHeader } from "@/components/ui/page-header";
 import { ProductThumb } from "@/components/ui/product-thumb";
 import { FulfilmentBadge } from "@/components/ui/status-badge";
 import { ProductTableControls } from "@/components/analytics/product-table-controls";
+import { CatalogTag, SplitStat } from "@/components/analytics/catalog-bits";
 import type { SearchParams } from "@/lib/filters";
 import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
@@ -14,6 +15,7 @@ import {
   getTopProductsForType,
   getTypeDetail,
 } from "@/server/analytics";
+import { getNewVsOldBreakdown, type Segment } from "@/server/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -33,12 +35,15 @@ export default async function ProductTypePage({
   const sp = await searchParams;
   const showAll = one(sp.view) === "all";
   const fulfilment = one(sp.fulfilment);
+  const segRaw = one(sp.segment);
+  const segment: Segment = segRaw === "new" || segRaw === "old" ? segRaw : "all";
   const f = await getFilters();
 
-  const [detail, products, fulfilmentTypes] = await Promise.all([
+  const [detail, products, fulfilmentTypes, split] = await Promise.all([
     getTypeDetail(f, type),
-    getTopProductsForType(f, type, { limit: showAll ? null : 20, fulfilment }),
+    getTopProductsForType(f, type, { limit: showAll ? null : 20, fulfilment, segment }),
     getFulfilmentTypesForType(f, type),
+    getNewVsOldBreakdown(f, type),
   ]);
   if (!detail.orders) notFound();
 
@@ -83,11 +88,30 @@ export default async function ProductTypePage({
           />
           <ProductTableControls fulfilmentTypes={fulfilmentTypes} />
         </CardBody>
+
+        {/* New vs old split for this product type (always over the full type). */}
+        <div className="grid grid-cols-1 gap-3 px-5 pb-4 sm:grid-cols-3 sm:px-6">
+          <SplitStat
+            label="New products"
+            hint="Added in the last 3 months"
+            stat={split.new}
+            tone="pos"
+          />
+          <SplitStat label="Established" hint="Older catalog products" stat={split.old} tone="ink" />
+          <SplitStat
+            label="Not in catalog"
+            hint="Unmatched to the uploaded catalog"
+            stat={split.unmatched}
+            tone="soft"
+          />
+        </div>
+
         <div className="overflow-x-auto scroll-slim">
-          <table className="w-full min-w-[640px] text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
                 <th className="px-5 py-3.5">Product Name</th>
+                <th className="px-5 py-3.5">Added</th>
                 <th className="px-5 py-3.5 text-right">Units Sold</th>
                 <th className="px-5 py-3.5 text-right">AOV</th>
                 <th className="px-5 py-3.5 text-right">Revenue</th>
@@ -96,7 +120,7 @@ export default async function ProductTypePage({
             <tbody>
               {products.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-16 text-center text-ink-soft">
+                  <td colSpan={5} className="px-5 py-16 text-center text-ink-soft">
                     No products for this selection.
                   </td>
                 </tr>
@@ -118,6 +142,9 @@ export default async function ProductTypePage({
                         )}
                       </span>
                     </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <CatalogTag createdAt={p.createdAt} isNew={p.isNew} />
                   </td>
                   <td className="px-5 py-3 text-right font-semibold text-ink tnum">
                     {formatNumber(p.units)}

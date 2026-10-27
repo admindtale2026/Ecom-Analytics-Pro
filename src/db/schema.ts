@@ -138,6 +138,37 @@ export const customers = pgTable(
   ],
 );
 
+/**
+ * products: the Magento product catalog, uploaded per store as a full export.
+ * Decoupled from sales — `order_lines` is never touched. The "new vs old"
+ * classification is computed at query time by joining a sold line to its catalog
+ * row (SKU first, name fallback) and comparing `createdAt` against a 3-month
+ * window from *today*, so nothing about "new" is baked into a stored column.
+ */
+export const products = pgTable(
+  "products",
+  {
+    id: serial("id").primaryKey(),
+    storeId: text("store_id").notNull(),
+    sku: text("sku").notNull(),
+    /** Normalized join key: upper-cased, whitespace stripped (see normalizeSku). */
+    skuKey: text("sku_key").notNull(),
+    name: text("name"),
+    /** Fallback join key: slugify(name), used when a sale carries no SKU. */
+    nameKey: text("name_key"),
+    /** Catalog creation date (Magento `created_at`); null when the cell was blank. */
+    createdAt: timestamp("created_at"),
+    productType: text("product_type"),
+    visibility: text("visibility"),
+    categories: text("categories"),
+  },
+  (t) => [
+    index("prod_store_idx").on(t.storeId),
+    index("prod_store_namekey_idx").on(t.storeId, t.nameKey),
+    uniqueIndex("prod_store_skukey_idx").on(t.storeId, t.skuKey),
+  ],
+);
+
 /** Application users (login + role). */
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -208,3 +239,5 @@ export type OrderLine = typeof orderLines.$inferSelect;
 export type NewOrderLine = typeof orderLines.$inferInsert;
 export type Customer = typeof customers.$inferSelect;
 export type User = typeof users.$inferSelect;
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
