@@ -158,3 +158,15 @@ export function normalizeSalesperson(raw: unknown): string | null {
 export function displayOrUnknown(value: string | null | undefined): string {
   return value && value.trim() !== "" ? value : UNKNOWN;
 }
+
+/**
+ * Canonicalise a SKU into a stable join key: upper-cased with all whitespace
+ * stripped. `order_lines.sku` is only ever trimmed at ingest (unlike the geo /
+ * label fields), so the catalog match must fold case and spacing on both sides
+ * itself — e.g. "dm06541d21 " and "DM06541D21" become one key. Returns "" for
+ * a blank/absent SKU so callers can detect "no SKU → fall back to name".
+ */
+export function normalizeSku(raw: unknown): string {
+  if (raw == null) return "";
+  return String(raw).trim().toUpperCase().replace(/\s+/g, "");
+}

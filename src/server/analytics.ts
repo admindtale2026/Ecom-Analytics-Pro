@@ -3,6 +3,7 @@ import { db } from "@/db/client";
 import { orderLines } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
 import { orderLineWhere, revenueSum, unitsSum, orderCount, repNameCol } from "./base";
+import { segmentWhere, groupedCreatedAt, isNewDate, type Segment } from "./catalog";
 import { safeDivide } from "@/lib/utils";
 
 const productType = sql<string>`coalesce(nullif(${orderLines.productType}, ''), 'Unknown')`;
@@ -197,6 +198,10 @@ export type ProductRow = {
   units: number;
   revenue: number;
   aov: number;
+  /** Catalog creation date — null when the product isn't in the uploaded catalog. */
+  createdAt: Date | null;
+  /** True when the product was created within the last 3 months. */
+  isNew: boolean;
 };
 
 /**
@@ -205,16 +210,21 @@ export type ProductRow = {
  * `opts.limit` caps the list (default 20 for the "top sellers" view); pass
  * `null` to return every product that sold in the window. `opts.fulfilment`
  * narrows to one fulfilment class (product_category) — the per-category filter.
+ * `opts.segment` narrows to new / old catalog products (see server/catalog.ts).
  */
 export async function getTopProductsForType(
   f: Filters,
   type: string,
-  opts: { limit?: number | null; fulfilment?: string } = {},
+  opts: { limit?: number | null; fulfilment?: string; segment?: Segment } = {},
 ): Promise<ProductRow[]> {
-  const { limit = 20, fulfilment } = opts;
-  const where = fulfilment
-    ? (and(typeWhere(f, type), eq(orderLines.productCategory, fulfilment)) as SQL)
-    : typeWhere(f, type);
+  const { limit = 20, fulfilment, segment } = opts;
+
+  const conds: SQL[] = [
+    segment && segment !== "all" ? segmentWhere(f, segment) : orderLineWhere(f),
+    eq(productType, type),
+  ];
+  if (fulfilment) conds.push(eq(orderLines.productCategory, fulfilment));
+  const where = and(...conds) as SQL;
 
   const base = db
     .select({
@@ -224,6 +234,7 @@ export async function getTopProductsForType(
       units: unitsSum,
       revenue: revenueSum,
       orders: orderCount,
+      createdAt: groupedCreatedAt(f.storeId),
     })
     .from(orderLines)
     .where(where)
@@ -232,14 +243,19 @@ export async function getTopProductsForType(
 
   const rows = await (limit == null ? base : base.limit(limit));
 
-  return rows.map((r) => ({
-    name: r.name,
-    imageUrl: r.imageUrl,
-    fulfilment: r.fulfilment,
-    units: Number(r.units),
-    revenue: Number(r.revenue),
-    aov: safeDivide(Number(r.revenue), Number(r.orders)),
-  }));
+  return rows.map((r) => {
+    const createdAt = r.createdAt ? new Date(r.createdAt) : null;
+    return {
+      name: r.name,
+      imageUrl: r.imageUrl,
+      fulfilment: r.fulfilment,
+      units: Number(r.units),
+      revenue: Number(r.revenue),
+      aov: safeDivide(Number(r.revenue), Number(r.orders)),
+      createdAt,
+      isNew: isNewDate(createdAt),
+    };
+  });
 }
 
 /**

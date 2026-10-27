@@ -14,6 +14,8 @@ export function ProductTableControls({ fulfilmentTypes }: { fulfilmentTypes: str
   const sp = useSearchParams();
   const patch = usePatchParams();
   const view = sp.get("view") === "all" ? "all" : "top";
+  const segRaw = sp.get("segment");
+  const segment = segRaw === "new" || segRaw === "old" ? segRaw : "all";
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -29,6 +31,23 @@ export function ProductTableControls({ fulfilmentTypes }: { fulfilmentTypes: str
             )}
           >
             {v === "top" ? "Top 20" : "All products"}
+          </button>
+        ))}
+      </div>
+
+      {/* New vs Old catalog split. Clearing to "all" drops the param. */}
+      <div className="inline-flex rounded-xl border border-line bg-card p-0.5 shadow-sm">
+        {(["all", "new", "old"] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            onClick={() => patch({ segment: s === "all" ? null : s })}
+            className={cn(
+              "rounded-lg px-3.5 py-1.5 text-sm font-semibold capitalize transition-colors duration-150",
+              segment === s ? "bg-brand-500 text-white shadow-sm" : "text-ink-soft hover:text-ink",
+            )}
+          >
+            {s}
           </button>
         ))}
       </div>

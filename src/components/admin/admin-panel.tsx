@@ -7,22 +7,26 @@ import {
   Trash2,
   Info,
   UserCheck,
+  PackageSearch,
 } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/card";
 import { SyncButtons } from "./sync-buttons";
 import { DatasetConnectionForm } from "./dataset-connection-form";
+import { CatalogUploadForm } from "./catalog-upload-form";
 import { AddMemberForm } from "./add-member-form";
 import { ResetPasswordControl } from "./reset-password-control";
 import { CANONICAL_FIELDS } from "@/lib/ingest/mapping";
 import { deleteTeamMember, saveSchemaMapping, setIdentityMode } from "@/lib/admin-actions";
 import { getDataSource, getTeam, resolveMapping } from "@/server/admin";
+import { getCatalogStats } from "@/server/catalog";
 import { getIdentityMode, type IdentityMode } from "@/server/customers";
 import type { StoreId } from "@/lib/constants";
-import { cn, initials } from "@/lib/utils";
+import { cn, initials, formatDMY } from "@/lib/utils";
 
 export const ADMIN_TABS = [
   { id: "dataset", label: "Dataset Connection", icon: Database },
   { id: "schema", label: "Schema Mapping", icon: Table2 },
+  { id: "catalog", label: "Product Catalog", icon: PackageSearch },
   { id: "team", label: "Team Access", icon: Users },
   { id: "identity", label: "Identity Logic", icon: Fingerprint },
 ] as const;
@@ -43,11 +47,12 @@ export async function AdminPanel({
   storeId: StoreId;
   basePath: string;
 }) {
-  const [source, mapping, team, identityMode] = await Promise.all([
+  const [source, mapping, team, identityMode, catalog] = await Promise.all([
     getDataSource(storeId),
     resolveMapping(storeId),
     getTeam(),
     getIdentityMode(),
+    getCatalogStats(storeId),
   ]);
 
   const kind: "sheets" | "upload" = source?.kind === "upload" ? "upload" : "sheets";
@@ -61,7 +66,7 @@ export async function AdminPanel({
             Data pipeline &amp; access management
           </p>
         </div>
-        {tab === "team" || tab === "identity" ? null : (
+        {tab === "team" || tab === "identity" || tab === "catalog" ? null : (
           <SyncButtons
             store={storeId}
             showCommit={tab === "schema"}
@@ -143,6 +148,55 @@ export async function AdminPanel({
                 ))}
               </div>
             </form>
+          </CardBody>
+        </Card>
+      )}
+
+      {tab === "catalog" && (
+        <Card>
+          <CardBody className="space-y-5">
+            <div>
+              <h3 className="font-bold text-ink">Product catalog</h3>
+              <p className="mt-1 text-sm text-ink-soft">
+                Upload the Magento <strong className="font-semibold text-ink">Export Products</strong>{" "}
+                CSV. Products created within the last 3 months are tagged{" "}
+                <em className="font-medium text-ink">New</em> in sales analysis; older ones show their
+                creation date. Matching is by SKU, falling back to product name.
+              </p>
+            </div>
+
+            {catalog.total > 0 ? (
+              <div className="flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
+                <span className="rounded-lg border border-line px-2.5 py-1">
+                  {catalog.total.toLocaleString("en-IN")} products
+                </span>
+                {catalog.total - catalog.withDate > 0 && (
+                  <span className="rounded-lg border border-line px-2.5 py-1">
+                    {catalog.total - catalog.withDate} without a date
+                  </span>
+                )}
+                {catalog.oldest && (
+                  <span className="rounded-lg border border-line px-2.5 py-1">
+                    Oldest {formatDMY(catalog.oldest)}
+                  </span>
+                )}
+                {catalog.newest && (
+                  <span className="rounded-lg border border-line px-2.5 py-1">
+                    Newest {formatDMY(catalog.newest)}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-soft" />
+                <p className="text-sm text-ink-soft">
+                  No catalog uploaded yet for this store. Until one is, products can&rsquo;t be split into
+                  new vs old.
+                </p>
+              </div>
+            )}
+
+            <CatalogUploadForm store={storeId} />
           </CardBody>
         </Card>
       )}
