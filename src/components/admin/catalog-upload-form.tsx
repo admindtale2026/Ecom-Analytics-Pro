@@ -21,14 +21,48 @@ export function CatalogUploadForm({ store }: { store: string }) {
   async function send(file: File) {
     setBusy(true);
     setResult(null);
-    const body = new FormData();
-    body.set("file", file);
-    body.set("store", store);
     try {
-      const res = await fetch("/api/catalog", { method: "POST", body });
-      const json = await res.json();
-      if (!res.ok) {
-        setResult({ ok: false, error: json.error ?? "Upload failed." });
+      // Parse + slim in the browser. A raw Magento export is ~90 columns and
+      // can be 15MB+; the serverless platform rejects a body that large at the
+      // edge (a plain-text 413) before the route runs. We keep only the columns
+      // the ingest reads and POST compact JSON, which stays well under the
+      // limit. xlsx is heavy, so it is only loaded once a file is chosen.
+      const [{ parseWorkbook }, { projectCatalogRow }] = await Promise.all([
+        import("@/lib/ingest/workbook"),
+        import("@/lib/ingest/catalog-columns"),
+      ]);
+      const rows = parseWorkbook(await file.arrayBuffer()).lines.map(projectCatalogRow);
+      if (!rows.length) {
+        setResult({ ok: false, error: "That file has no product rows." });
+        return;
+      }
+
+      const res = await fetch("/api/catalog", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ store, rows }),
+      });
+
+      // Read as text first: a platform-level error (413, gateway timeout) comes
+      // back as plain text, not JSON, and blindly calling res.json() on it is
+      // what produced the cryptic "Unexpected token 'R'…" error.
+      const text = await res.text();
+      let json: { error?: string; products?: { written: number; withoutDate: number } } | null = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {
+        json = null;
+      }
+
+      if (!res.ok || !json?.products) {
+        setResult({
+          ok: false,
+          error:
+            json?.error ??
+            (res.status === 413
+              ? "That file is too large for the server to accept. Try re-exporting a smaller catalog."
+              : `Upload failed (HTTP ${res.status}).`),
+        });
       } else {
         setResult({
           ok: true,
