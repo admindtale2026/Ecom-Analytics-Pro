@@ -12,6 +12,7 @@ import {
   UserCog,
   Settings,
   Map,
+  TrendingDown,
 } from "lucide-react";
 
 export type NavItem = {
@@ -30,6 +31,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Sales Team", href: "/sales-team", icon: Users, group: "main" },
   { label: "Customers", href: "/customers", icon: HeartHandshake, group: "main" },
   { label: "Inventory", href: "/inventory", icon: Package, group: "main" },
+  { label: "Dead Stock", href: "/dead-stock", icon: TrendingDown, group: "main" },
   { label: "Not Processed", href: "/not-processed", icon: PackageX, group: "main" },
   { label: "Regions", href: "/regions", icon: MapPin, group: "main" },
   { label: "Ad Opportunity", href: "/opportunity", icon: Map, group: "main" },

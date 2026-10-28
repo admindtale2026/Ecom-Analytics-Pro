@@ -1,0 +1,1 @@
+ALTER TABLE "products" ADD COLUMN "attribute_set_code" text;
