@@ -60,17 +60,23 @@ const catalogLogicalKey = sql<string>`coalesce(nullif(${products.nameKey}, ''), 
 const notDisabled = sql`coalesce(lower(nullif(trim(${products.status}), '')), 'enabled') not in ('disabled', '2')`;
 
 /**
- * The logical-product key of a single order line: find its catalog row (SKU key
- * first, name slug fallback only when the line carries no SKU; Disabled rows
- * ignored) and return that row's logical key. `limit 1` so a line matching
- * several same-name variants resolves to one product — the dedup that keeps
- * summed sales honest. Null when the line matches no (enabled) catalog product.
+ * The logical-product key of a single order line: find its catalog row and
+ * return that row's logical key. Matches on SKU key first; when the line's SKU
+ * matches no catalog row it falls back to the slugified product name. That
+ * fallback is the common case here, not an edge case: orders record the child
+ * variant SKU (e.g. "09854D23-P014") while the catalog frequently lists only the
+ * parent (e.g. "09268D22"), so a name-only match is how most sales attach to the
+ * right product — without it, actively-selling products are mislabelled dead.
+ * `order by` keeps a SKU match ahead of any name match, and `limit 1` collapses
+ * several same-name variants to one product (the dedup that keeps summed sales
+ * honest). Disabled rows are ignored; null when the line matches no (enabled)
+ * catalog product.
  */
 const lineLogicalKey = sql<string | null>`(
   select coalesce(nullif(pc.name_key, ''), pc.sku_key)
   from ${products} pc
   where pc.store_id = ${orderLines.storeId}
-    and ( pc.sku_key = ${olSkuKey} or (${olSkuKey} = '' and pc.name_key = ${olNameKey}) )
+    and ( pc.sku_key = ${olSkuKey} or (${olNameKey} <> '' and pc.name_key = ${olNameKey}) )
     and coalesce(lower(nullif(trim(pc.status), '')), 'enabled') not in ('disabled', '2')
   order by case when pc.sku_key = ${olSkuKey} then 0 else 1 end
   limit 1
