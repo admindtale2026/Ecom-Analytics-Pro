@@ -49,6 +49,17 @@ function str(v: unknown): string | null {
 }
 
 /**
+ * Parse a Magento money cell to a number, or null when blank/unparseable — null
+ * (not 0) so "value at risk" never counts a product with no price and the UI can
+ * show "—". Strips `₹`, thousands separators and whitespace.
+ */
+function num(v: unknown): number | null {
+  if (v == null) return null;
+  const n = Number(String(v).replace(/[₹,\s]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
  * Parse Magento's `created_at` string, which exports in US locale as
  * `M/D/YY, h:mm AM/PM` (e.g. `8/9/21, 7:24 PM`) — a format `new Date()` parses
  * inconsistently across engines and gets wrong for 2-digit years. We match it
@@ -121,6 +132,8 @@ export async function ingestCatalog(
       visibility: str(get("visibility")),
       categories: str(get("categories")),
       attributeSetCode: str(get("attribute_set_code", "attributesetcode", "attribute set code")),
+      price: num(get("price")),
+      status: str(get("status")),
     });
   }
 
