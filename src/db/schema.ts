@@ -163,6 +163,10 @@ export const products = pgTable(
     categories: text("categories"),
     /** Magento attribute set (e.g. "Sofa", "Chair") — the grouping dimension for Dead Stock. */
     attributeSetCode: text("attribute_set_code"),
+    /** Magento list price; null until a catalog with a `price` column is (re-)uploaded. */
+    price: doublePrecision("price"),
+    /** Magento product status ("Enabled"/"Disabled", or 1/2). Disabled is hidden from Dead Stock. */
+    status: text("status"),
   },
   (t) => [
     index("prod_store_idx").on(t.storeId),
