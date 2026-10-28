@@ -49,6 +49,22 @@ function str(v: unknown): string | null {
 }
 
 /**
+ * Magento's product export has no plain `status` column; it carries the
+ * enabled/disabled flag in `product_online` (1 = enabled, 2 = disabled). Fold
+ * that into `status` so the dead-stock filter (which drops Disabled rows) can
+ * see it. An explicit `status` cell, should a different export ever carry one,
+ * wins; a blank `product_online` stays null and is treated as enabled downstream.
+ */
+function catalogStatus(status: unknown, productOnline: unknown): string | null {
+  const explicit = str(status);
+  if (explicit) return explicit;
+  const po = str(productOnline);
+  if (po === "1") return "enabled";
+  if (po === "2") return "disabled";
+  return null;
+}
+
+/**
  * Parse a Magento money cell to a number, or null when blank/unparseable — null
  * (not 0) so "value at risk" never counts a product with no price and the UI can
  * show "—". Strips `₹`, thousands separators and whitespace.
@@ -133,7 +149,7 @@ export async function ingestCatalog(
       categories: str(get("categories")),
       attributeSetCode: str(get("attribute_set_code", "attributesetcode", "attribute set code")),
       price: num(get("price")),
-      status: str(get("status")),
+      status: catalogStatus(get("status"), get("product_online", "productonline")),
     });
   }
 
