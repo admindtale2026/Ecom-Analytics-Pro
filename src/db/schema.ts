@@ -161,6 +161,8 @@ export const products = pgTable(
     productType: text("product_type"),
     visibility: text("visibility"),
     categories: text("categories"),
+    /** Magento attribute set (e.g. "Sofa", "Chair") — the grouping dimension for Dead Stock. */
+    attributeSetCode: text("attribute_set_code"),
   },
   (t) => [
     index("prod_store_idx").on(t.storeId),

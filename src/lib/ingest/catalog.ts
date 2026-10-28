@@ -120,6 +120,7 @@ export async function ingestCatalog(
       productType: str(get("product_type", "producttype")),
       visibility: str(get("visibility")),
       categories: str(get("categories")),
+      attributeSetCode: str(get("attribute_set_code", "attributesetcode", "attribute set code")),
     });
   }
 

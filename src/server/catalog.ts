@@ -30,10 +30,10 @@ const NEW_CUTOFF = sql`now() - interval '3 months'`;
  * Normalized SKU key of an order line. `[[:space:]]` (not `\s`) is used so the
  * regex survives drizzle's tagged-template concatenation unambiguously.
  */
-const olSkuKey = sql`upper(regexp_replace(coalesce(${orderLines.sku}, ''), '[[:space:]]+', '', 'g'))`;
+export const olSkuKey = sql`upper(regexp_replace(coalesce(${orderLines.sku}, ''), '[[:space:]]+', '', 'g'))`;
 
 /** Slugified product name of an order line — must match `slugify()` exactly. */
-const olNameKey = sql`trim(both '-' from regexp_replace(lower(coalesce(${orderLines.productName}, '')), '[^a-z0-9]+', '-', 'g'))`;
+export const olNameKey = sql`trim(both '-' from regexp_replace(lower(coalesce(${orderLines.productName}, '')), '[^a-z0-9]+', '-', 'g'))`;
 
 /** Product type bucket (duplicated from analytics.ts to avoid a cyclic import). */
 const productTypeExpr = sql<string>`coalesce(nullif(${orderLines.productType}, ''), 'Unknown')`;
