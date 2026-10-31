@@ -13,11 +13,12 @@ import { Card, CardBody } from "@/components/ui/card";
 import { SyncButtons } from "./sync-buttons";
 import { DatasetConnectionForm } from "./dataset-connection-form";
 import { CatalogUploadForm } from "./catalog-upload-form";
+import { CatalogSourceForm } from "./catalog-source-form";
 import { AddMemberForm } from "./add-member-form";
 import { ResetPasswordControl } from "./reset-password-control";
 import { CANONICAL_FIELDS } from "@/lib/ingest/mapping";
 import { deleteTeamMember, saveSchemaMapping, setIdentityMode } from "@/lib/admin-actions";
-import { getDataSource, getTeam, resolveMapping } from "@/server/admin";
+import { getCatalogSource, getDataSource, getTeam, resolveMapping } from "@/server/admin";
 import { getCatalogStats } from "@/server/catalog";
 import { getIdentityMode, type IdentityMode } from "@/server/customers";
 import type { StoreId } from "@/lib/constants";
@@ -47,12 +48,13 @@ export async function AdminPanel({
   storeId: StoreId;
   basePath: string;
 }) {
-  const [source, mapping, team, identityMode, catalog] = await Promise.all([
+  const [source, mapping, team, identityMode, catalog, catalogSource] = await Promise.all([
     getDataSource(storeId),
     resolveMapping(storeId),
     getTeam(),
     getIdentityMode(),
     getCatalogStats(storeId),
+    getCatalogSource(storeId),
   ]);
 
   const kind: "sheets" | "upload" = source?.kind === "upload" ? "upload" : "sheets";
@@ -158,10 +160,12 @@ export async function AdminPanel({
             <div>
               <h3 className="font-bold text-ink">Product catalog</h3>
               <p className="mt-1 text-sm text-ink-soft">
-                Upload the Magento <strong className="font-semibold text-ink">Export Products</strong>{" "}
-                CSV. Products created within the last 3 months are tagged{" "}
-                <em className="font-medium text-ink">New</em> in sales analysis; older ones show their
-                creation date. Matching is by SKU, falling back to product name.
+                Connect the Magento{" "}
+                <strong className="font-semibold text-ink">Export Products</strong> sheet below, then
+                sync. A product is tagged <em className="font-medium text-ink">New</em> in sales
+                analysis when its <em className="font-medium text-ink">Categories</em> cell carries a
+                launch-month tag (e.g. &ldquo;Jan 26&rdquo;), which also drives the month filter.
+                Matching to sales is by SKU, falling back to product name.
               </p>
             </div>
 
@@ -169,6 +173,9 @@ export async function AdminPanel({
               <div className="flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-wide text-ink-soft">
                 <span className="rounded-lg border border-line px-2.5 py-1">
                   {catalog.total.toLocaleString("en-IN")} products
+                </span>
+                <span className="rounded-lg border border-emerald-200 bg-emerald-50/60 px-2.5 py-1 text-pos">
+                  {catalog.withMonth.toLocaleString("en-IN")} tagged new
                 </span>
                 {catalog.total - catalog.withDate > 0 && (
                   <span className="rounded-lg border border-line px-2.5 py-1">
@@ -190,13 +197,28 @@ export async function AdminPanel({
               <div className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-soft" />
                 <p className="text-sm text-ink-soft">
-                  No catalog uploaded yet for this store. Until one is, products can&rsquo;t be split into
+                  No catalog synced yet for this store. Until one is, products can&rsquo;t be split into
                   new vs old.
                 </p>
               </div>
             )}
 
-            <CatalogUploadForm store={storeId} />
+            <CatalogSourceForm
+              store={storeId}
+              sheetUrl={catalogSource.sheetUrl ?? ""}
+              lastSyncedLabel={
+                catalogSource.syncedAt
+                  ? `Last synced ${catalogSource.syncedAt.toLocaleString("en-IN")}`
+                  : null
+              }
+            />
+
+            <div className="border-t border-line pt-5">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-soft">
+                Or upload a CSV once
+              </p>
+              <CatalogUploadForm store={storeId} />
+            </div>
           </CardBody>
         </Card>
       )}

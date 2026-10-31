@@ -98,6 +98,26 @@ export function formatDMY(value: Date | string | null | undefined): string {
   return `${dd}-${mm}-${d.getFullYear()}`;
 }
 
+const MONTH_ABBR = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+] as const;
+
+/**
+ * Render a launch-month key ("2026-01") as the short label shown on New chips and
+ * filters ("Jan 26"). Returns the raw key unchanged if it isn't a YYYY-MM string,
+ * and an em dash for null. Deterministic (no Date/locale) so server and client
+ * agree.
+ */
+export function monthKeyToLabel(key: string | null | undefined): string {
+  if (!key) return "—";
+  const m = /^(\d{4})-(\d{2})$/.exec(key);
+  if (!m) return key;
+  const month = Number(m[2]);
+  if (month < 1 || month > 12) return key;
+  return `${MONTH_ABBR[month - 1]} ${m[1].slice(2)}`;
+}
+
 export function initials(name: string | null | undefined): string {
   if (!name) return "?";
   const parts = name.trim().split(/\s+/);

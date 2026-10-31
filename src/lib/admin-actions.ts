@@ -8,7 +8,8 @@ import { db } from "@/db/client";
 import { dataSources, schemaMappings, settings, users } from "@/db/schema";
 import { getCurrentUser } from "@/lib/session";
 import { IDENTITY_MODE_KEY } from "@/server/customers";
-import { STORES } from "@/lib/constants";
+import { catalogUrlKey } from "@/server/admin";
+import { STORES, type StoreId } from "@/lib/constants";
 import { CANONICAL_FIELDS } from "@/lib/ingest/mapping";
 
 async function requireAdmin() {
@@ -176,4 +177,36 @@ export async function setDataSource(
   }
   revalidatePath("/admin/settings");
   return { ok: "Connection saved." };
+}
+
+/**
+ * Persist the per-store catalog Google Sheet link (Admin › Product Catalog).
+ * Stored in the key/value `settings` table so it survives catalog re-syncs. An
+ * empty value clears the link. Saving does not sync — the admin hits "Sync
+ * Catalog" (or the nightly cron picks it up).
+ */
+export async function setCatalogSource(
+  _prev: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdmin();
+  const store = storeId.parse(formData.get("store"));
+  const sheetUrl = String(formData.get("sheetUrl") ?? "").trim();
+
+  if (sheetUrl && !/^https:\/\/docs\.google\.com\//.test(sheetUrl)) {
+    return { error: "Catalog link must be a docs.google.com Sheet URL." };
+  }
+
+  const key = catalogUrlKey(store as StoreId);
+  if (sheetUrl) {
+    await db
+      .insert(settings)
+      .values({ key, value: sheetUrl })
+      .onConflictDoUpdate({ target: settings.key, set: { value: sheetUrl } });
+  } else {
+    await db.delete(settings).where(eq(settings.key, key));
+  }
+
+  revalidatePath("/admin/settings");
+  return { ok: sheetUrl ? "Catalog link saved. Hit Sync Catalog to import." : "Catalog link cleared." };
 }

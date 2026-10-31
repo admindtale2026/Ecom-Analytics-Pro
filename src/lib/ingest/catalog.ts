@@ -18,6 +18,7 @@ export type CatalogIngestResult = {
   read: number;
   written: number;
   withoutDate: number;
+  withMonth: number;
 };
 
 /** PGlite chokes on very wide multi-row inserts; 400 keeps statements sane. */
@@ -115,6 +116,41 @@ export function parseMagentoDate(v: unknown): Date | null {
   return Number.isFinite(d.getTime()) ? d : null;
 }
 
+const MONTH_INDEX: Record<string, number> = {
+  jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+  jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
+};
+
+/** One comma-separated category token → launch month as a comparable yyyymm, or null. */
+function monthFromToken(token: string): number | null {
+  // "Jan 26" / "Jan-26" / "January 26". A 3-letter month prefix, an optional
+  // space/hyphen, then a 2-digit year. Anything else (e.g. "Sale 30%") is ignored.
+  const m = /^([a-z]{3})[a-z]*[\s-]?(\d{2})$/.exec(token.trim().toLowerCase());
+  if (!m) return null;
+  const month = MONTH_INDEX[m[1]];
+  if (!month) return null;
+  return (2000 + Number(m[2])) * 100 + month; // e.g. 2026 * 100 + 1 = 202601
+}
+
+/**
+ * Parse the launch-month tag out of a Magento Categories cell. The month lives
+ * among the comma-separated categories (e.g. "Jan 26, Furniture, Dining"); a row
+ * may carry several (e.g. "Nov 25, Jan 26") in which case the **latest** wins —
+ * that's the month the product is treated as launched. Returns "YYYY-MM" (sortable)
+ * or null when no recognizable month tag is present.
+ */
+export function parseNewMonth(categories: unknown): string | null {
+  const s = str(categories);
+  if (!s) return null;
+  let best: number | null = null;
+  for (const token of s.split(",")) {
+    const ym = monthFromToken(token);
+    if (ym != null && (best == null || ym > best)) best = ym;
+  }
+  if (best == null) return null;
+  return `${Math.floor(best / 100)}-${String(best % 100).padStart(2, "0")}`;
+}
+
 type ProductInsert = typeof products.$inferInsert;
 
 export async function ingestCatalog(
@@ -136,6 +172,8 @@ export async function ingestCatalog(
     const createdAt = parseMagentoDate(get("created_at", "createdat"));
     if (!createdAt) withoutDate += 1;
 
+    const categories = str(get("categories"));
+
     // Last row wins on a repeated SKU, matching the (storeId, skuKey) upsert key.
     deduped.set(skuKey, {
       storeId,
@@ -144,9 +182,10 @@ export async function ingestCatalog(
       name,
       nameKey: name ? slugify(name) : null,
       createdAt,
+      newMonth: parseNewMonth(categories),
       productType: str(get("product_type", "producttype")),
       visibility: str(get("visibility")),
-      categories: str(get("categories")),
+      categories,
       attributeSetCode: str(get("attribute_set_code", "attributesetcode", "attribute set code")),
       price: num(get("price")),
       status: catalogStatus(get("status"), get("product_online", "productonline")),
@@ -154,6 +193,7 @@ export async function ingestCatalog(
   }
 
   const rows = [...deduped.values()];
+  const withMonth = rows.reduce((n, r) => n + (r.newMonth ? 1 : 0), 0);
 
   // Full reload: drop the store's catalog, then insert fresh. Matches the
   // full-sync semantics in pipeline.ts (delete-then-insert, no transaction).
@@ -162,5 +202,5 @@ export async function ingestCatalog(
     await db.insert(products).values(rows.slice(i, i + BATCH));
   }
 
-  return { read: rawRows.length, written: rows.length, withoutDate };
+  return { read: rawRows.length, written: rows.length, withoutDate, withMonth };
 }

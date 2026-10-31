@@ -1,18 +1,26 @@
 import { Sparkles } from "lucide-react";
 import type { SegmentStats } from "@/server/catalog";
-import { formatCurrency, formatDMY, formatNumber, cn } from "@/lib/utils";
+import { formatCurrency, formatDMY, formatNumber, monthKeyToLabel, cn } from "@/lib/utils";
 
 /**
- * A product's catalog age, shown in sales tables: a "New" chip for products
- * created within the last 3 months, else their creation date (DD-MM-YYYY), else
- * an em dash when the product isn't in the uploaded catalog.
+ * A product's catalog status, shown in sales tables: a "New" chip tagged with the
+ * launch month (e.g. "✦ Jan 26") for month-tagged products, else their creation
+ * date (DD-MM-YYYY), else an em dash when the product isn't in the catalog.
  */
-export function CatalogTag({ createdAt, isNew }: { createdAt: Date | null; isNew: boolean }) {
+export function CatalogTag({
+  createdAt,
+  isNew,
+  newMonth,
+}: {
+  createdAt: Date | null;
+  isNew: boolean;
+  newMonth?: string | null;
+}) {
   if (isNew) {
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-pos">
         <Sparkles className="h-3 w-3" />
-        New
+        {newMonth ? `New · ${monthKeyToLabel(newMonth)}` : "New"}
       </span>
     );
   }

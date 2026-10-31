@@ -15,7 +15,7 @@ import {
   getTopProductsForType,
   getTypeDetail,
 } from "@/server/analytics";
-import { getNewVsOldBreakdown, type Segment } from "@/server/catalog";
+import { getNewMonths, getNewVsOldBreakdown, type Segment } from "@/server/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -37,13 +37,15 @@ export default async function ProductTypePage({
   const fulfilment = one(sp.fulfilment);
   const segRaw = one(sp.segment);
   const segment: Segment = segRaw === "new" || segRaw === "old" ? segRaw : "all";
+  const month = one(sp.newMonth) ?? null;
   const f = await getFilters();
 
-  const [detail, products, fulfilmentTypes, split] = await Promise.all([
+  const [detail, products, fulfilmentTypes, split, months] = await Promise.all([
     getTypeDetail(f, type),
-    getTopProductsForType(f, type, { limit: showAll ? null : 20, fulfilment, segment }),
+    getTopProductsForType(f, type, { limit: showAll ? null : 20, fulfilment, segment, month }),
     getFulfilmentTypesForType(f, type),
     getNewVsOldBreakdown(f, type),
+    getNewMonths(f.storeId),
   ]);
   if (!detail.orders) notFound();
 
@@ -86,14 +88,14 @@ export default async function ProductTypePage({
             }
             icon={<CircleCheck className="h-5 w-5" />}
           />
-          <ProductTableControls fulfilmentTypes={fulfilmentTypes} />
+          <ProductTableControls fulfilmentTypes={fulfilmentTypes} months={months} />
         </CardBody>
 
         {/* New vs old split for this product type (always over the full type). */}
         <div className="grid grid-cols-1 gap-3 px-5 pb-4 sm:grid-cols-3 sm:px-6">
           <SplitStat
             label="New products"
-            hint="Added in the last 3 months"
+            hint="Tagged with a launch month (e.g. Jan 26)"
             stat={split.new}
             tone="pos"
           />
@@ -144,7 +146,7 @@ export default async function ProductTypePage({
                     </span>
                   </td>
                   <td className="px-5 py-3">
-                    <CatalogTag createdAt={p.createdAt} isNew={p.isNew} />
+                    <CatalogTag createdAt={p.createdAt} isNew={p.isNew} newMonth={p.newMonth} />
                   </td>
                   <td className="px-5 py-3 text-right font-semibold text-ink tnum">
                     {formatNumber(p.units)}
