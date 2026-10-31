@@ -43,6 +43,13 @@
       "when": 1793223072830,
       "tag": "0005_pink_shotgun",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793431948689,
+      "tag": "0006_misty_skullbuster",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { orderLines } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
 import { orderLineWhere, revenueSum, unitsSum, orderCount, repNameCol } from "./base";
-import { segmentWhere, groupedCreatedAt, isNewDate, type Segment } from "./catalog";
+import { segmentWhere, groupedCreatedAt, groupedNewMonth, type Segment } from "./catalog";
 import { safeDivide } from "@/lib/utils";
 
 const productType = sql<string>`coalesce(nullif(${orderLines.productType}, ''), 'Unknown')`;
@@ -200,7 +200,9 @@ export type ProductRow = {
   aov: number;
   /** Catalog creation date — null when the product isn't in the uploaded catalog. */
   createdAt: Date | null;
-  /** True when the product was created within the last 3 months. */
+  /** Launch-month tag ("2026-01") when the product is new, else null. */
+  newMonth: string | null;
+  /** True when the product carries a launch-month tag (i.e. classified "new"). */
   isNew: boolean;
 };
 
@@ -210,17 +212,18 @@ export type ProductRow = {
  * `opts.limit` caps the list (default 20 for the "top sellers" view); pass
  * `null` to return every product that sold in the window. `opts.fulfilment`
  * narrows to one fulfilment class (product_category) — the per-category filter.
- * `opts.segment` narrows to new / old catalog products (see server/catalog.ts).
+ * `opts.segment` narrows to new / old catalog products (see server/catalog.ts);
+ * `opts.month` further narrows the `new` segment to a single launch month.
  */
 export async function getTopProductsForType(
   f: Filters,
   type: string,
-  opts: { limit?: number | null; fulfilment?: string; segment?: Segment } = {},
+  opts: { limit?: number | null; fulfilment?: string; segment?: Segment; month?: string | null } = {},
 ): Promise<ProductRow[]> {
-  const { limit = 20, fulfilment, segment } = opts;
+  const { limit = 20, fulfilment, segment, month } = opts;
 
   const conds: SQL[] = [
-    segment && segment !== "all" ? segmentWhere(f, segment) : orderLineWhere(f),
+    segment && segment !== "all" ? segmentWhere(f, segment, month) : orderLineWhere(f),
     eq(productType, type),
   ];
   if (fulfilment) conds.push(eq(orderLines.productCategory, fulfilment));
@@ -235,6 +238,7 @@ export async function getTopProductsForType(
       revenue: revenueSum,
       orders: orderCount,
       createdAt: groupedCreatedAt(f.storeId),
+      newMonth: groupedNewMonth(f.storeId),
     })
     .from(orderLines)
     .where(where)
@@ -253,7 +257,8 @@ export async function getTopProductsForType(
       revenue: Number(r.revenue),
       aov: safeDivide(Number(r.revenue), Number(r.orders)),
       createdAt,
-      isNew: isNewDate(createdAt),
+      newMonth: r.newMonth ?? null,
+      isNew: Boolean(r.newMonth),
     };
   });
 }

@@ -139,11 +139,12 @@ export const customers = pgTable(
 );
 
 /**
- * products: the Magento product catalog, uploaded per store as a full export.
- * Decoupled from sales — `order_lines` is never touched. The "new vs old"
- * classification is computed at query time by joining a sold line to its catalog
- * row (SKU first, name fallback) and comparing `createdAt` against a 3-month
- * window from *today*, so nothing about "new" is baked into a stored column.
+ * products: the Magento product catalog, synced per store from a link-shared
+ * Google Sheet (the full export) or uploaded as a CSV. Decoupled from sales —
+ * `order_lines` is never touched. The "new vs old" classification is computed at
+ * query time by joining a sold line to its catalog row (SKU first, name
+ * fallback): a product is "new" when its `newMonth` is set — i.e. its Categories
+ * cell carries a launch-month tag like "Jan 26" (see parseNewMonth at ingest).
  */
 export const products = pgTable(
   "products",
@@ -158,6 +159,12 @@ export const products = pgTable(
     nameKey: text("name_key"),
     /** Catalog creation date (Magento `created_at`); null when the cell was blank. */
     createdAt: timestamp("created_at"),
+    /**
+     * Launch-month tag parsed from the Categories cell ("Jan 26" → "2026-01"),
+     * sortable as YYYY-MM. Null when no month tag is present. A non-null value is
+     * what marks a product "new"; the latest tag wins when several are present.
+     */
+    newMonth: text("new_month"),
     productType: text("product_type"),
     visibility: text("visibility"),
     categories: text("categories"),
@@ -171,6 +178,7 @@ export const products = pgTable(
   (t) => [
     index("prod_store_idx").on(t.storeId),
     index("prod_store_namekey_idx").on(t.storeId, t.nameKey),
+    index("prod_store_newmonth_idx").on(t.storeId, t.newMonth),
     uniqueIndex("prod_store_skukey_idx").on(t.storeId, t.skuKey),
   ],
 );

@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { orderLines, products } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
 import { orderLineWhere } from "./base";
-import { olSkuKey, olNameKey, isNewDate } from "./catalog";
+import { olSkuKey, olNameKey } from "./catalog";
 
 /**
  * "Dead Stock": catalog products that aren't moving, grouped by category.
@@ -197,6 +197,7 @@ async function fetchLogicalProducts(f: Filters, category?: string): Promise<Prod
         category: sql<string>`coalesce(nullif(trim(max(${products.attributeSetCode})), ''), 'Uncategorized')`,
         status: sql<string | null>`max(${products.status})`,
         createdAt: sql<Date | null>`min(${products.createdAt})`,
+        newMonth: sql<string | null>`max(${products.newMonth})`,
         price: sql<number | null>`max(${products.price})`,
         skuCount: sql<number>`count(distinct ${products.skuKey})`,
       })
@@ -266,7 +267,7 @@ async function fetchLogicalProducts(f: Filters, category?: string): Promise<Prod
       revenue: w.revenue,
       orders: w.orders,
       tier,
-      isNew: isNewDate(createdAt),
+      isNew: Boolean(r.newMonth),
       lastSold,
       daysIdle,
       daysToFirstSale,

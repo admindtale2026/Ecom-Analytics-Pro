@@ -4,9 +4,12 @@ import { Card, CardBody, CardTitle } from "@/components/ui/card";
 import { HBar } from "@/components/charts/bar-chart";
 import { ProductThumb } from "@/components/ui/product-thumb";
 import { CatalogTag, SplitStat } from "@/components/analytics/catalog-bits";
+import { NewMonthFilter } from "@/components/analytics/new-month-filter";
+import type { SearchParams } from "@/lib/filters";
 import { getFilters } from "@/lib/filters-server";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import {
+  getNewMonths,
   getNewVsOldBreakdown,
   getProductsBySegment,
   type SegmentProductRow,
@@ -14,12 +17,23 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function CatalogPage() {
+function one(v: string | string[] | undefined) {
+  return Array.isArray(v) ? v[0] : v;
+}
+
+export default async function CatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const sp = await searchParams;
+  const month = one(sp.newMonth) ?? null;
   const f = await getFilters();
-  const [split, newProducts, oldProducts] = await Promise.all([
+  const [split, newProducts, oldProducts, months] = await Promise.all([
     getNewVsOldBreakdown(f),
-    getProductsBySegment(f, "new", { limit: 50 }),
+    getProductsBySegment(f, "new", { limit: 50, month }),
     getProductsBySegment(f, "old", { limit: 50 }),
+    getNewMonths(f.storeId),
   ]);
 
   const matched = split.new.products + split.old.products;
@@ -34,7 +48,7 @@ export default async function CatalogPage() {
       <div className="anim-stack grid grid-cols-1 gap-4 sm:grid-cols-3">
         <SplitStat
           label="New products"
-          hint="Created in the last 3 months"
+          hint="Tagged with a launch month (e.g. Jan 26)"
           stat={split.new}
           tone="pos"
         />
@@ -80,10 +94,11 @@ export default async function CatalogPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <ProductTable
           title="New products sold"
-          subtitle="Added in the last 3 months"
+          subtitle="Tagged with a launch month in the catalog"
           icon={<Sparkles className="h-5 w-5" />}
           rows={newProducts}
           emptyLabel="No new products sold in this period."
+          controls={<NewMonthFilter months={months} />}
         />
         <ProductTable
           title="Established products sold"
@@ -103,17 +118,20 @@ function ProductTable({
   icon,
   rows,
   emptyLabel,
+  controls,
 }: {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
   rows: SegmentProductRow[];
   emptyLabel: string;
+  controls?: React.ReactNode;
 }) {
   return (
     <Card>
-      <CardBody className="pb-0">
+      <CardBody className="flex flex-col gap-4 pb-0 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle title={`${title} (${formatNumber(rows.length)})`} subtitle={subtitle} icon={icon} />
+        {controls}
       </CardBody>
       <div className="overflow-x-auto scroll-slim">
         <table className="w-full min-w-[520px] text-sm">
@@ -145,7 +163,7 @@ function ProductTable({
                   </span>
                 </td>
                 <td className="px-5 py-3">
-                  <CatalogTag createdAt={p.createdAt} isNew={p.isNew} />
+                  <CatalogTag createdAt={p.createdAt} isNew={p.isNew} newMonth={p.newMonth} />
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-ink tnum">
                   {formatNumber(p.units)}
