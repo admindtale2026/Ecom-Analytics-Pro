@@ -12,10 +12,17 @@ import { orderLineWhere, revenueSum, unitsSum, orderCount } from "./base";
  * A sold line is matched to its `products` row by SKU first (normalized the same
  * way `normalizeSku` does at ingest — upper-cased, whitespace stripped), falling
  * back to product name (slugified, mirroring `slugify` in lib/utils) whenever the
- * line's SKU matches no catalog row. A matched product is "new" when its catalog
- * `new_month` is set — i.e. its Categories cell carried a launch-month tag like
- * "Jan 26" (parsed at ingest into "2026-01"). The month doubles as a filter
- * dimension. Nothing about "new" is stored on order lines; it's resolved here.
+ * line's SKU matches no catalog row. A matched product carries a launch-month
+ * tag when its catalog `new_month` is set — i.e. its Categories cell carried a
+ * tag like "Jan 26" (parsed at ingest into "2026-01"). Nothing about "new" is
+ * stored on order lines; it's resolved here.
+ *
+ * "New" is defined relative to the **global date filter**: a product counts as
+ * new only when its launch month falls inside the months being viewed (see
+ * {@link monthWindow}). There is no separate launch-month control — the date
+ * range the user already picked is the single source of truth. Filter October
+ * 2026 and only October-2026 launches read as new; a July-2025 launch reads as
+ * established, even though it still carries a tag.
  *
  * Note: this module must not import from ./analytics (which imports from here) —
  * the product-type expression is duplicated below to keep the dependency
@@ -81,46 +88,49 @@ export function monthInWindow(month: string | null, f: Filters): boolean {
 }
 
 /**
- * SQL: the sold line matches a month-tagged product whose launch month falls
- * inside the active date filter's window. YYYY-MM strings sort lexicographically,
- * so plain string comparison is the month comparison.
+ * SQL predicate: a resolved launch-month value (null | '' | 'YYYY-MM') represents
+ * an in-window "new" product. Parameterised over any month-valued expression so
+ * the same rule serves both a correlated subquery (in a WHERE clause) and a plain
+ * derived column (in the breakdown). YYYY-MM strings sort lexicographically, so
+ * string comparison is month comparison.
  */
-function isNewInWindow(f: Filters): SQL {
+function isNewInWindow(monthValue: SQL, f: Filters): SQL {
   const { from, to } = monthWindow(f);
-  const clauses: SQL[] = [sql`${rowNewMonthKey} is not null`, sql`${rowNewMonthKey} <> ''`];
-  if (from) clauses.push(sql`${rowNewMonthKey} >= ${from}`);
-  if (to) clauses.push(sql`${rowNewMonthKey} <= ${to}`);
+  const clauses: SQL[] = [sql`${monthValue} is not null`, sql`${monthValue} <> ''`];
+  if (from) clauses.push(sql`${monthValue} >= ${from}`);
+  if (to) clauses.push(sql`${monthValue} <= ${to}`);
   return and(...clauses) as SQL;
 }
 
 /**
- * new | old | unmatched for one line, as a groupable label. "new" is scoped to
- * the filter window (see {@link monthWindow}); a month-tagged product launched
- * outside the window falls through to "old" (established).
+ * new | old | unmatched for a resolved launch-month value. "new" is scoped to the
+ * filter window; a month-tagged product launched outside the window falls through
+ * to "old" (established). Kept as a plain expression over `monthValue` so callers
+ * can feed it a *derived column* and group by an ordinal — never a correlated
+ * subquery embedded in GROUP BY (Postgres rejects that; see getNewVsOldBreakdown).
  */
-function segmentExpr(f: Filters): SQL<string> {
+function segmentExpr(monthValue: SQL, f: Filters): SQL<string> {
   return sql<string>`case
-  when ${rowNewMonthKey} is null then 'unmatched'
-  when ${isNewInWindow(f)} then 'new'
+  when ${monthValue} is null then 'unmatched'
+  when ${isNewInWindow(monthValue, f)} then 'new'
   else 'old' end`;
 }
 
 /**
- * Global filters narrowed to one catalog segment, and optionally one launch month
- * (only meaningful for the `new` segment). `new` is scoped to the filter window;
- * an explicit `month` overrides that window with a single launch month. `old` is
- * matched-but-not-new (untagged, or launched outside the window). `all` is just
- * the plain filter. Unmatched lines belong to no segment.
+ * Global filters narrowed to one catalog segment. `new` is matched-and-in-window;
+ * `old` is matched-but-not-new (untagged, or launched outside the window); `all`
+ * is just the plain filter. Unmatched lines belong to no segment. The launch-month
+ * window comes entirely from the global date filter — there is no per-month knob.
  */
-export function segmentWhere(f: Filters, segment: Segment, month?: string | null): SQL {
+export function segmentWhere(f: Filters, segment: Segment): SQL {
   const base = orderLineWhere(f);
-  if (segment === "new") {
-    return (month
-      ? and(base, sql`${rowNewMonthKey} = ${month}`)
-      : and(base, isNewInWindow(f))) as SQL;
-  }
+  if (segment === "new") return and(base, isNewInWindow(rowNewMonthKey, f)) as SQL;
   if (segment === "old") {
-    return and(base, sql`${rowNewMonthKey} is not null`, sql`not (${isNewInWindow(f)})`) as SQL;
+    return and(
+      base,
+      sql`${rowNewMonthKey} is not null`,
+      sql`not (${isNewInWindow(rowNewMonthKey, f)})`,
+    ) as SQL;
   }
   return base;
 }
@@ -164,16 +174,6 @@ export function groupedNewMonth(storeId: StoreId): SQL<string | null> {
   )`;
 }
 
-/** The launch months present in a store's catalog, newest first — filter options. */
-export async function getNewMonths(storeId: StoreId): Promise<string[]> {
-  const rows = await db
-    .selectDistinct({ month: products.newMonth })
-    .from(products)
-    .where(and(eq(products.storeId, storeId), sql`${products.newMonth} is not null`))
-    .orderBy(sql`${products.newMonth} desc`);
-  return rows.map((r) => r.month).filter((m): m is string => Boolean(m));
-}
-
 export type SegmentStats = { products: number; units: number; revenue: number; orders: number };
 export type NewVsOld = { new: SegmentStats; old: SegmentStats; unmatched: SegmentStats };
 
@@ -182,22 +182,41 @@ const EMPTY: SegmentStats = { products: 0, units: 0, revenue: 0, orders: 0 };
 /**
  * One grouped pass over the sold lines, split into new / old / unmatched.
  * `type`, when given, narrows to a single product type (for the per-type page).
+ *
+ * Shape matters here. The catalog lookup is a correlated subquery, and Postgres
+ * forbids one inside GROUP BY unless the SELECT and GROUP BY copies are identical
+ * node-for-node — which breaks the moment the window bounds add bound parameters
+ * (they get renumbered per occurrence, so `>= $1` in SELECT vs `>= $6` in GROUP BY
+ * stop matching, and Postgres then errors on the "ungrouped" order_lines columns).
+ * So we resolve the launch month to a plain column `row_month` in an inner derived
+ * table first, then classify and `group by 1` over that column — no subquery in
+ * the grouping, and the lookup runs once per line instead of five times.
  */
 export async function getNewVsOldBreakdown(f: Filters, type?: string): Promise<NewVsOld> {
   const where = type ? (and(orderLineWhere(f), eq(productTypeExpr, type)) as SQL) : orderLineWhere(f);
-  const seg = segmentExpr(f);
 
-  const rows = await db
+  const lines = db
     .select({
-      segment: seg,
-      products: sql<number>`count(distinct coalesce(nullif(${orderLines.productName}, ''), 'Unnamed product'))`,
-      units: unitsSum,
-      revenue: revenueSum,
-      orders: orderCount,
+      name: sql<string>`coalesce(nullif(${orderLines.productName}, ''), 'Unnamed product')`.as("name"),
+      quantity: orderLines.quantity,
+      paymentAmount: orderLines.paymentAmount,
+      orderId: orderLines.orderId,
+      rowMonth: sql<string | null>`${rowNewMonthKey}`.as("row_month"),
     })
     .from(orderLines)
     .where(where)
-    .groupBy(seg);
+    .as("lines");
+
+  const rows = await db
+    .select({
+      segment: segmentExpr(sql`${lines.rowMonth}`, f),
+      products: sql<number>`count(distinct ${lines.name})`,
+      units: sql<number>`coalesce(sum(${lines.quantity}),0)`,
+      revenue: sql<number>`coalesce(sum(${lines.paymentAmount}),0)`,
+      orders: sql<number>`count(distinct ${lines.orderId})`,
+    })
+    .from(lines)
+    .groupBy(sql`1`);
 
   const out: NewVsOld = { new: { ...EMPTY }, old: { ...EMPTY }, unmatched: { ...EMPTY } };
   for (const r of rows) {
@@ -228,15 +247,15 @@ export type SegmentProductRow = {
 
 /**
  * Products (grouped by name, across all types) within a segment, ranked by
- * revenue — the lists on the dedicated /catalog page. `opts.month` narrows the
- * `new` segment to a single launch month.
+ * revenue — the lists on the dedicated /catalog page. The `new` segment is scoped
+ * to the global date filter's launch-month window (see {@link segmentWhere}).
  */
 export async function getProductsBySegment(
   f: Filters,
   segment: Segment,
-  opts: { limit?: number | null; month?: string | null } = {},
+  opts: { limit?: number | null } = {},
 ): Promise<SegmentProductRow[]> {
-  const { limit = 50, month } = opts;
+  const { limit = 50 } = opts;
 
   const base = db
     .select({
@@ -249,7 +268,7 @@ export async function getProductsBySegment(
       newMonth: groupedNewMonth(f.storeId),
     })
     .from(orderLines)
-    .where(segmentWhere(f, segment, month))
+    .where(segmentWhere(f, segment))
     .groupBy(sql`1`)
     .orderBy(sql`4 desc`);
 

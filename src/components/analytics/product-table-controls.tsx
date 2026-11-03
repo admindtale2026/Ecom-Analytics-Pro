@@ -3,22 +3,16 @@
 import { useSearchParams } from "next/navigation";
 import { Filter } from "lucide-react";
 import { usePatchParams } from "@/hooks/use-patch-params";
-import { NewMonthFilter } from "./new-month-filter";
 import { cn } from "@/lib/utils";
 
 /**
  * Controls for the category product table: a Top 20 / All toggle, a new/old
- * segment switch, a launch-month filter, and a fulfilment-class ("Filter by")
- * dropdown. All write to the URL so the server component re-queries — they
- * compose (e.g. All + New + Jan 26 + Made To Order).
+ * segment switch, and a fulfilment-class ("Filter by") dropdown. All write to the
+ * URL so the server component re-queries — they compose (e.g. All + New + Made To
+ * Order). "New" is defined by the global date filter, so there is no launch-month
+ * control here.
  */
-export function ProductTableControls({
-  fulfilmentTypes,
-  months,
-}: {
-  fulfilmentTypes: string[];
-  months: string[];
-}) {
+export function ProductTableControls({ fulfilmentTypes }: { fulfilmentTypes: string[] }) {
   const sp = useSearchParams();
   const patch = usePatchParams();
   const view = sp.get("view") === "all" ? "all" : "top";
@@ -59,8 +53,6 @@ export function ProductTableControls({
           </button>
         ))}
       </div>
-
-      <NewMonthFilter months={months} linkSegment />
 
       {fulfilmentTypes.length > 0 && (
         <label className="flex items-center gap-2.5 rounded-xl border border-line bg-card px-3.5 py-2.5 shadow-sm">
