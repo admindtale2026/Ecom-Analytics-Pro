@@ -123,9 +123,13 @@ const MONTH_INDEX: Record<string, number> = {
 
 /** One comma-separated category token → launch month as a comparable yyyymm, or null. */
 function monthFromToken(token: string): number | null {
+  // Magento exports each category as a full hierarchy *path*, so the token looks
+  // like "Default Category/New/Jan 26" — the launch month is the leaf segment,
+  // not the whole token. Match against the last "/"-separated segment.
   // "Jan 26" / "Jan-26" / "January 26". A 3-letter month prefix, an optional
   // space/hyphen, then a 2-digit year. Anything else (e.g. "Sale 30%") is ignored.
-  const m = /^([a-z]{3})[a-z]*[\s-]?(\d{2})$/.exec(token.trim().toLowerCase());
+  const leaf = token.split("/").pop() ?? token;
+  const m = /^([a-z]{3})[a-z]*[\s-]?(\d{2})$/.exec(leaf.trim().toLowerCase());
   if (!m) return null;
   const month = MONTH_INDEX[m[1]];
   if (!month) return null;
