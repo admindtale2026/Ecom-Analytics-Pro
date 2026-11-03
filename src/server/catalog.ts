@@ -57,24 +57,71 @@ const rowNewMonthKey = sql<string | null>`(
   limit 1
 )`;
 
-/** new | old | unmatched for one line, as a groupable label. */
-const segmentExpr = sql<string>`case
+/**
+ * The launch-month window implied by the active date filter, as comparable
+ * YYYY-MM strings. A null bound means that side is unbounded ("All Time", or a
+ * custom range with one end open) — no constraint on that end.
+ *
+ * This is what ties "new" to the date filter: a product only counts as new when
+ * its launch month falls inside the period being viewed. Filter October 2026 and
+ * only October-2026 launches read as new; a July-2025 launch reads as
+ * established, even though it still carries a month tag.
+ */
+export function monthWindow(f: Filters): { from: string | null; to: string | null } {
+  const key = (d: Date | null) =>
+    d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}` : null;
+  return { from: key(f.from), to: key(f.to) };
+}
+
+/** JS predicate mirroring {@link isNewInWindow} — is a tag inside the window? */
+export function monthInWindow(month: string | null, f: Filters): boolean {
+  if (!month) return false;
+  const { from, to } = monthWindow(f);
+  return (!from || month >= from) && (!to || month <= to);
+}
+
+/**
+ * SQL: the sold line matches a month-tagged product whose launch month falls
+ * inside the active date filter's window. YYYY-MM strings sort lexicographically,
+ * so plain string comparison is the month comparison.
+ */
+function isNewInWindow(f: Filters): SQL {
+  const { from, to } = monthWindow(f);
+  const clauses: SQL[] = [sql`${rowNewMonthKey} is not null`, sql`${rowNewMonthKey} <> ''`];
+  if (from) clauses.push(sql`${rowNewMonthKey} >= ${from}`);
+  if (to) clauses.push(sql`${rowNewMonthKey} <= ${to}`);
+  return and(...clauses) as SQL;
+}
+
+/**
+ * new | old | unmatched for one line, as a groupable label. "new" is scoped to
+ * the filter window (see {@link monthWindow}); a month-tagged product launched
+ * outside the window falls through to "old" (established).
+ */
+function segmentExpr(f: Filters): SQL<string> {
+  return sql<string>`case
   when ${rowNewMonthKey} is null then 'unmatched'
-  when ${rowNewMonthKey} = '' then 'old'
-  else 'new' end`;
+  when ${isNewInWindow(f)} then 'new'
+  else 'old' end`;
+}
 
 /**
  * Global filters narrowed to one catalog segment, and optionally one launch month
- * (only meaningful for the `new` segment). `old` is matched-but-untagged; `all`
- * is just the plain filter. Unmatched lines belong to no segment.
+ * (only meaningful for the `new` segment). `new` is scoped to the filter window;
+ * an explicit `month` overrides that window with a single launch month. `old` is
+ * matched-but-not-new (untagged, or launched outside the window). `all` is just
+ * the plain filter. Unmatched lines belong to no segment.
  */
 export function segmentWhere(f: Filters, segment: Segment, month?: string | null): SQL {
   const base = orderLineWhere(f);
   if (segment === "new") {
-    const isNew = sql`${rowNewMonthKey} is not null and ${rowNewMonthKey} <> ''`;
-    return (month ? and(base, isNew, sql`${rowNewMonthKey} = ${month}`) : and(base, isNew)) as SQL;
+    return (month
+      ? and(base, sql`${rowNewMonthKey} = ${month}`)
+      : and(base, isNewInWindow(f))) as SQL;
   }
-  if (segment === "old") return and(base, sql`${rowNewMonthKey} = ''`) as SQL;
+  if (segment === "old") {
+    return and(base, sql`${rowNewMonthKey} is not null`, sql`not (${isNewInWindow(f)})`) as SQL;
+  }
   return base;
 }
 
@@ -138,10 +185,11 @@ const EMPTY: SegmentStats = { products: 0, units: 0, revenue: 0, orders: 0 };
  */
 export async function getNewVsOldBreakdown(f: Filters, type?: string): Promise<NewVsOld> {
   const where = type ? (and(orderLineWhere(f), eq(productTypeExpr, type)) as SQL) : orderLineWhere(f);
+  const seg = segmentExpr(f);
 
   const rows = await db
     .select({
-      segment: segmentExpr,
+      segment: seg,
       products: sql<number>`count(distinct coalesce(nullif(${orderLines.productName}, ''), 'Unnamed product'))`,
       units: unitsSum,
       revenue: revenueSum,
@@ -149,7 +197,7 @@ export async function getNewVsOldBreakdown(f: Filters, type?: string): Promise<N
     })
     .from(orderLines)
     .where(where)
-    .groupBy(segmentExpr);
+    .groupBy(seg);
 
   const out: NewVsOld = { new: { ...EMPTY }, old: { ...EMPTY }, unmatched: { ...EMPTY } };
   for (const r of rows) {
@@ -217,7 +265,7 @@ export async function getProductsBySegment(
       aov: safeDivide(Number(r.revenue), Number(r.orders)),
       createdAt,
       newMonth: r.newMonth ?? null,
-      isNew: Boolean(r.newMonth),
+      isNew: monthInWindow(r.newMonth ?? null, f),
     };
   });
 }
