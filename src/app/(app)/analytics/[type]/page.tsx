@@ -15,7 +15,7 @@ import {
   getTopProductsForType,
   getTypeDetail,
 } from "@/server/analytics";
-import { getNewMonths, getNewVsOldBreakdown, type Segment } from "@/server/catalog";
+import { getNewVsOldBreakdown, type Segment } from "@/server/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -37,15 +37,13 @@ export default async function ProductTypePage({
   const fulfilment = one(sp.fulfilment);
   const segRaw = one(sp.segment);
   const segment: Segment = segRaw === "new" || segRaw === "old" ? segRaw : "all";
-  const month = one(sp.newMonth) ?? null;
   const f = await getFilters();
 
-  const [detail, products, fulfilmentTypes, split, months] = await Promise.all([
+  const [detail, products, fulfilmentTypes, split] = await Promise.all([
     getTypeDetail(f, type),
-    getTopProductsForType(f, type, { limit: showAll ? null : 20, fulfilment, segment, month }),
+    getTopProductsForType(f, type, { limit: showAll ? null : 20, fulfilment, segment }),
     getFulfilmentTypesForType(f, type),
     getNewVsOldBreakdown(f, type),
-    getNewMonths(f.storeId),
   ]);
   if (!detail.orders) notFound();
 
@@ -88,14 +86,14 @@ export default async function ProductTypePage({
             }
             icon={<CircleCheck className="h-5 w-5" />}
           />
-          <ProductTableControls fulfilmentTypes={fulfilmentTypes} months={months} />
+          <ProductTableControls fulfilmentTypes={fulfilmentTypes} />
         </CardBody>
 
         {/* New vs old split for this product type (always over the full type). */}
         <div className="grid grid-cols-1 gap-3 px-5 pb-4 sm:grid-cols-3 sm:px-6">
           <SplitStat
             label="New products"
-            hint="Tagged with a launch month (e.g. Jan 26)"
+            hint="Launched within the selected date range"
             stat={split.new}
             tone="pos"
           />

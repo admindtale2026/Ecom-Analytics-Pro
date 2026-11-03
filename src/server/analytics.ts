@@ -213,17 +213,17 @@ export type ProductRow = {
  * `null` to return every product that sold in the window. `opts.fulfilment`
  * narrows to one fulfilment class (product_category) — the per-category filter.
  * `opts.segment` narrows to new / old catalog products (see server/catalog.ts);
- * `opts.month` further narrows the `new` segment to a single launch month.
+ * the `new` segment is scoped to the global date filter's launch-month window.
  */
 export async function getTopProductsForType(
   f: Filters,
   type: string,
-  opts: { limit?: number | null; fulfilment?: string; segment?: Segment; month?: string | null } = {},
+  opts: { limit?: number | null; fulfilment?: string; segment?: Segment } = {},
 ): Promise<ProductRow[]> {
-  const { limit = 20, fulfilment, segment, month } = opts;
+  const { limit = 20, fulfilment, segment } = opts;
 
   const conds: SQL[] = [
-    segment && segment !== "all" ? segmentWhere(f, segment, month) : orderLineWhere(f),
+    segment && segment !== "all" ? segmentWhere(f, segment) : orderLineWhere(f),
     eq(productType, type),
   ];
   if (fulfilment) conds.push(eq(orderLines.productCategory, fulfilment));
