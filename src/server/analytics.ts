@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { orderLines } from "@/db/schema";
 import type { Filters } from "@/lib/filters";
 import { orderLineWhere, revenueSum, unitsSum, orderCount, repNameCol } from "./base";
-import { segmentWhere, groupedCreatedAt, groupedNewMonth, type Segment } from "./catalog";
+import { segmentWhere, groupedCreatedAt, groupedNewMonth, monthInWindow, type Segment } from "./catalog";
 import { safeDivide } from "@/lib/utils";
 
 const productType = sql<string>`coalesce(nullif(${orderLines.productType}, ''), 'Unknown')`;
@@ -258,7 +258,7 @@ export async function getTopProductsForType(
       aov: safeDivide(Number(r.revenue), Number(r.orders)),
       createdAt,
       newMonth: r.newMonth ?? null,
-      isNew: Boolean(r.newMonth),
+      isNew: monthInWindow(r.newMonth ?? null, f),
     };
   });
 }
